@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<!-- Purpose: Renders the technical-hr-choice page for the Career Catalyst frontend. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Career Catalyst | Q/A Tracks</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .gloss-card {
+      position: relative;
+      overflow: hidden;
+      transition: 0.3s ease;
+    }
+    .gloss-card:hover {
+      transform: translateY(-4px);
+    }
+    .gloss-card::after {
+      content: "";
+      position: absolute;
+      top: -100%;
+      left: -100%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        120deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.35) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: rotate(25deg);
+      transition: 0.6s ease-in-out;
+      opacity: 0;
+    }
+    .gloss-card:hover::after {
+      top: 100%;
+      left: 100%;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="bg-white overflow-x-hidden">
+  <!-- NAVBAR -->
+  <nav class="bg-white border-b shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-10">
+        <div class="flex items-center gap-3 cursor-pointer"
+             onclick="window.location.href='student-dashboard.html'">
+          <img src="./assets/CareerCatalyst.png" class="w-36 h-auto" />
+        </div>
+        <div class="hidden md:flex gap-8 text-slate-700 font-medium">
+          <a href="student-dashboard.html" class="hover:text-blue-600 transition">Home</a>
+          <a href="#" class="hover:text-blue-600 transition">Practice</a>
+          <a href="#" class="hover:text-blue-600 transition">Jobs</a>
+          <a href="#" class="hover:text-blue-600 transition">Search Jobs</a>
+        </div>
+      </div>
+      <div class="flex items-center gap-6">
+        <span id="navUser" class="text-slate-700 font-semibold text-sm md:text-base"></span>
+        <button id="logoutBtn"
+          class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition font-medium">
+          Logout
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="px-14 py-12">
+    <h1 class="text-4xl font-extrabold text-slate-900">Choose Your Q/A Track</h1>
+    <p class="text-slate-600 text-lg mt-3 max-w-2xl">
+      Pick a focused track so your practice feels relevant and efficient.
+    </p>
+  </div>
+
+  <!-- CHOICES -->
+  <div class="px-12 pb-16">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="gloss-card rounded-2xl p-6 bg-orange-200 shadow cursor-pointer h-56 w-full flex items-center"
+           onclick="window.location.href='technical-qa.html'">
+        <div class="w-20 h-20 flex items-center justify-center mr-5">
+          <img src="./assets/technical.png" alt="Technical Icon" class="max-w-full max-h-full object-contain" />
+        </div>
+        <div>
+          <h3 class="text-2xl font-semibold text-slate-900">Technical Q/A</h3>
+          <p class="text-sm text-slate-700 mt-2 leading-relaxed">
+            Company-specific technical questions, core CS fundamentals,
+            and problem-solving practice.
+          </p>
+        </div>
+      </div>
+
+      <div class="gloss-card rounded-2xl p-6 bg-yellow-200 shadow cursor-pointer h-56 w-full flex items-center"
+           onclick="window.location.href='hr-qa.html'">
+        <div class="w-20 h-20 flex items-center justify-center mr-5">
+          <img src="./assets/interview.png" alt="Interview Icon" class="max-w-full max-h-full object-contain" />
+        </div>
+        <div>
+          <h3 class="text-2xl font-semibold text-slate-900">HR / Behavioral Q/A</h3>
+          <p class="text-sm text-slate-700 mt-2 leading-relaxed">
+            Behavioral questions, situational answers, communication skills,
+            and HR round preparation.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple auth guard + navbar user
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    const username = localStorage.getItem("username") || "User";
+
+    if (!token || role !== "candidate") {
+      window.location.href = "login.html";
+    }
+
+    document.getElementById("navUser").textContent = username;
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "role.html";
+    });
+  </script>
+</body>
+</html>

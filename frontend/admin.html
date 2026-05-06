@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<!-- Purpose: Renders the admin page for the Career Catalyst frontend. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Career Catalyst | Admin Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 flex min-h-screen overflow-x-hidden font-sans text-slate-800">
+  <aside id="sidebar" class="w-72 bg-white border-r border-slate-200 flex flex-col hidden">
+    <div class="p-6 flex items-center justify-center border-b border-slate-200">
+      <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Admin Logo" class="w-10 h-10 mr-3" />
+      <h1 class="text-2xl font-bold text-sky-700">Career Catalyst</h1>
+    </div>
+    <nav class="flex-1 p-4 space-y-2">
+      <button data-nav="dashboard" onclick="showSection('dashboard')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-sky-50 transition">Overview</button>
+      <button data-nav="users" onclick="showSection('users')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-sky-50 transition">Manage Users</button>
+      <button data-nav="posts" onclick="showSection('posts')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-sky-50 transition">Job Posts</button>
+      <button data-nav="resources" onclick="showSection('resources')" class="w-full text-left px-4 py-2 rounded-lg hover:bg-sky-50 transition">Resource Approvals</button>
+    </nav>
+  </aside>
+
+  <div class="flex-1 flex flex-col overflow-y-auto">
+    <header id="navbar" class="bg-white border-b border-slate-200 h-16 flex justify-between items-center px-4 sm:px-6 hidden">
+      <div class="flex items-center space-x-3">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="w-8 h-8" alt="Logo" />
+        <h2 class="font-semibold text-slate-700 text-lg">Admin Dashboard</h2>
+      </div>
+      <button onclick="logoutAdmin()" class="px-3 py-2 text-sm bg-slate-100 hover:bg-slate-200 rounded-lg">Logout</button>
+    </header>
+
+    <section id="loginSection" class="flex-1 flex items-center justify-center p-6 w-full max-w-md mx-auto">
+      <div class="bg-white rounded-2xl shadow-xl p-8 w-full border border-slate-200">
+        <div class="flex flex-col items-center mb-6">
+          <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Career Catalyst Logo" class="w-24 h-24 mb-4" />
+          <h1 class="text-3xl font-bold text-sky-700">Career Catalyst</h1>
+          <p class="text-slate-500 mt-2">Admin Access Panel</p>
+        </div>
+        <form id="loginForm" class="space-y-4">
+          <div>
+            <label for="accessCode" class="block text-slate-700 font-medium mb-1">Enter Access Code</label>
+            <input type="password" id="accessCode" placeholder="********" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500" required />
+          </div>
+          <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg font-semibold transition">Login</button>
+          <p id="errorMsg" class="text-red-500 text-sm mt-2 hidden">Invalid Access Code</p>
+        </form>
+      </div>
+    </section>
+
+    <section id="adminSection" class="flex-1 flex flex-col hidden w-full px-4 sm:px-6 py-4 gap-6">
+      <section id="dashboard" class="hidden w-full">
+        <h1 class="text-3xl font-bold mb-6 text-slate-800">Overview</h1>
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="text-slate-500">Total Users</h3>
+            <p id="totalUsers" class="text-3xl font-bold text-sky-700 mt-2">0</p>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="text-slate-500">Total Students</h3>
+            <p id="totalStudents" class="text-3xl font-bold text-green-600 mt-2">0</p>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="text-slate-500">Total Recruiters</h3>
+            <p id="totalRecruiters" class="text-3xl font-bold text-amber-600 mt-2">0</p>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="text-slate-500">All Job Posts</h3>
+            <p id="allJobsCountCard" class="text-3xl font-bold text-violet-700 mt-2">0</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="users" class="hidden w-full">
+        <h2 class="text-3xl font-bold mb-4 text-slate-800">Manage Users</h2>
+        <div class="overflow-x-auto bg-white border border-slate-200 shadow-sm rounded-2xl">
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Profile</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Name</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Email</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Role</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Skills</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Status</th>
+                <th class="px-6 py-3 text-center text-sm font-semibold text-slate-600">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="userTableBody" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="posts" class="hidden w-full space-y-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-3xl font-bold text-slate-800">Post a Job</h2>
+            <button type="button" onclick="showSection('dashboard')" class="text-slate-500 hover:text-slate-700">Back to dashboard</button>
+          </div>
+          <form id="postForm" class="space-y-4">
+            <input type="hidden" id="companyName" value="Admin" />
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Job Title</label>
+                <input id="postJobTitle" type="text" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500" placeholder="e.g. Front-End Developer" required />
+              </div>
+              <div>
+                <label class="block text-slate-700 font-medium mb-1">Location</label>
+                <input id="postLocation" type="text" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500" placeholder="City, Country" required />
+              </div>
+            </div>
+            <div>
+              <label class="block text-slate-700 font-medium mb-1">Job Type</label>
+              <select id="postType" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500" required>
+                <option value="">Select Type</option>
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Internship">Internship</option>
+                <option value="Contract">Contract</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-slate-700 font-medium mb-1">Salary (optional)</label>
+              <input id="postSalary" type="text" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500" placeholder="e.g. 6,00,000 - 8,00,000" />
+            </div>
+            <div>
+              <label class="block text-slate-700 font-medium mb-1">Description</label>
+              <textarea id="postDesc" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500" rows="7" placeholder="Write the job description, responsibilities, requirements..." required></textarea>
+            </div>
+
+            <div class="border border-slate-200 rounded-xl p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-xl font-semibold">Application Form Fields (optional)</h3>
+                <button type="button" id="addFieldBtn" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg">+ Add Field</button>
+              </div>
+              <div id="applicationFieldsContainer" class="space-y-2"></div>
+              <p class="text-sm text-slate-500 mt-2">Students must fill these fields while applying. Resume is required from student profile.</p>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+              <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold transition">Publish Job</button>
+              <button type="reset" class="bg-white border border-slate-300 px-5 py-2 rounded-lg font-medium">Reset</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="overflow-x-auto bg-white border border-slate-200 shadow-sm rounded-2xl">
+          <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+            <h4 class="font-semibold">Admin Created Jobs</h4>
+            <span id="adminPostsCount" class="text-sm text-slate-500">0 jobs</span>
+          </div>
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Title</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Location</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Type</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Fields</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Description</th>
+                <th class="px-6 py-3 text-center text-sm font-semibold text-slate-600">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="postsTableBody" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+
+        <div class="overflow-x-auto bg-white border border-slate-200 shadow-sm rounded-2xl">
+          <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+            <h4 class="font-semibold">All Job Posts In Platform</h4>
+            <div class="flex items-center gap-3">
+              <span id="allJobsCount" class="text-sm text-slate-500">0 jobs</span>
+              <button onclick="fetchAllJobs()" class="px-3 py-1.5 text-sm rounded-lg bg-slate-100 hover:bg-slate-200">Refresh</button>
+            </div>
+          </div>
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Title</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Company</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Type</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Location</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Status</th>
+                <th class="px-6 py-3 text-center text-sm font-semibold text-slate-600">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="allJobsTableBody" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="resources" class="hidden w-full space-y-4">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <h2 class="text-3xl font-bold text-slate-800">Resource Approvals</h2>
+            <button onclick="fetchResources()" class="px-3 py-1.5 text-sm rounded-lg bg-slate-100 hover:bg-slate-200">Refresh</button>
+          </div>
+          <p class="text-sm text-slate-500 mt-2">Review student uploaded resources and approve or reject before publishing.</p>
+        </div>
+
+        <div class="overflow-x-auto bg-white border border-slate-200 shadow-sm rounded-2xl">
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Title</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Category</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Uploader</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">Status</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-slate-600">File</th>
+                <th class="px-6 py-3 text-center text-sm font-semibold text-slate-600">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="resourcesTableBody" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </section>
+  </div>
+
+  <script>
+    const API_BASE_URL = "http://localhost:5000/api/admin";
+    const PUBLIC_JOBS_URL = "http://localhost:5000/api/jobs/public";
+    const LEGACY_ADMIN_ACCESS_CODE = "Career123";
+    let allPosts = [];
+    let allJobs = [];
+    let allResources = [];
+    let adminToken = "";
+    let legacyMode = false;
+
+    const loginForm = document.getElementById("loginForm");
+    const errorMsg = document.getElementById("errorMsg");
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const code = document.getElementById("accessCode").value.trim();
+      try {
+        const res = await fetch(`${API_BASE_URL}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accessCode: code })
+        });
+        if (res.status === 404) throw new Error("LOGIN_ROUTE_NOT_FOUND");
+        if (!res.ok) throw new Error("Invalid access code");
+        const data = await res.json();
+        adminToken = data?.token || "";
+        if (!adminToken) throw new Error("Token missing");
+        legacyMode = false;
+        document.getElementById("loginSection").classList.add("hidden");
+        document.getElementById("sidebar").classList.remove("hidden");
+        document.getElementById("navbar").classList.remove("hidden");
+        document.getElementById("adminSection").classList.remove("hidden");
+        errorMsg.classList.add("hidden");
+        fetchUsers();
+        fetchPosts();
+        fetchAllJobs();
+        fetchResources();
+        showSection("dashboard");
+      } catch (err) {
+        // Backward-compatible fallback ONLY if login route is missing
+        if (err?.message === "LOGIN_ROUTE_NOT_FOUND" && code === LEGACY_ADMIN_ACCESS_CODE) {
+          legacyMode = true;
+          adminToken = "";
+          document.getElementById("loginSection").classList.add("hidden");
+          document.getElementById("sidebar").classList.remove("hidden");
+          document.getElementById("navbar").classList.remove("hidden");
+          document.getElementById("adminSection").classList.remove("hidden");
+          errorMsg.classList.add("hidden");
+          fetchUsers();
+          fetchPosts();
+          fetchAllJobs();
+          fetchResources();
+          showSection("dashboard");
+          return;
+        }
+        legacyMode = false;
+        errorMsg.textContent = "Invalid Access Code";
+        errorMsg.classList.remove("hidden");
+      }
+    });
+
+    function authHeaders(extra = {}) {
+      return {
+        ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {}),
+        ...extra
+      };
+    }
+
+    async function apiFetch(url, options = {}) {
+      const opts = { ...options, headers: authHeaders(options.headers || {}) };
+      if (!legacyMode && !adminToken && !url.endsWith("/login")) {
+        throw new Error("Admin token missing");
+      }
+      const res = await fetch(url, opts);
+      if (!legacyMode && adminToken && (res.status === 401 || res.status === 403)) {
+        logoutAdmin();
+        throw new Error("Session expired");
+      }
+      return res;
+    }
+
+    function escapeHtml(str = "") {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function showSection(id) {
+      document.querySelectorAll("#adminSection section").forEach((sec) => sec.classList.add("hidden"));
+      document.getElementById(id).classList.remove("hidden");
+      document.querySelectorAll("[data-nav]").forEach((btn) => {
+        const active = btn.getAttribute("data-nav") === id;
+        btn.classList.toggle("bg-sky-100", active);
+        btn.classList.toggle("text-sky-800", active);
+        btn.classList.toggle("font-semibold", active);
+      });
+    }
+
+    async function fetchUsers() {
+      try {
+        const res = await apiFetch(`${API_BASE_URL}/users`);
+        const raw = await res.json();
+        const data = Array.isArray(raw) ? raw : [];
+        document.getElementById("totalUsers").innerText = data.length;
+        document.getElementById("totalStudents").innerText = data.filter((u) => u.role === "student").length;
+        document.getElementById("totalRecruiters").innerText = data.filter((u) => u.role === "recruiter").length;
+
+        const tbody = document.getElementById("userTableBody");
+        tbody.innerHTML = "";
+        data.forEach((user) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="px-6 py-4"><img src="${user.profilePicUrl || user.profilePic || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}" class="w-10 h-10 rounded-full" alt="profile"></td>
+            <td class="px-6 py-4 font-medium text-slate-700">${escapeHtml(user.name || "-")}</td>
+            <td class="px-6 py-4">${escapeHtml(user.email || "-")}</td>
+            <td class="px-6 py-4 capitalize">${escapeHtml(user.role || "-")}</td>
+            <td class="px-6 py-4">${escapeHtml((user.skills || []).join(", ") || "-")}</td>
+            <td class="px-6 py-4 font-semibold">${escapeHtml(user.status || "Pending")}</td>
+            <td class="px-6 py-4 text-center space-x-2">
+              <button onclick="approveUser('${user._id}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded transition">Approve</button>
+              <button onclick="blockUser('${user._id}')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded transition">Block</button>
+              <button onclick="deleteUser('${user._id}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function deleteUser(id) {
+      if (confirm("Delete this user?")) {
+        await apiFetch(`${API_BASE_URL}/users/${id}`, { method: "DELETE" });
+        fetchUsers();
+      }
+    }
+
+    async function blockUser(id) {
+      await apiFetch(`${API_BASE_URL}/users/${id}/block`, { method: "PATCH" });
+      fetchUsers();
+    }
+
+    async function approveUser(id) {
+      await apiFetch(`${API_BASE_URL}/users/${id}/approve`, { method: "PATCH" });
+      fetchUsers();
+    }
+
+    function addApplicationFieldRow(defaults = {}) {
+      const container = document.getElementById("applicationFieldsContainer");
+      const row = document.createElement("div");
+      row.className = "grid grid-cols-12 gap-2";
+      row.innerHTML = `
+        <input class="col-span-5 px-3 py-2 border rounded-md text-sm field-label" placeholder="Question label" value="${escapeHtml(defaults.label || "")}" />
+        <select class="col-span-3 px-2 py-2 border rounded-md text-sm field-type">
+          <option value="text">Text</option>
+          <option value="textarea">Textarea</option>
+          <option value="number">Number</option>
+          <option value="date">Date</option>
+          <option value="select">Select</option>
+        </select>
+        <input class="col-span-2 px-3 py-2 border rounded-md text-sm field-options" placeholder="a,b,c" value="${escapeHtml((defaults.options || []).join(","))}" />
+        <label class="col-span-1 flex items-center justify-center text-xs"><input type="checkbox" class="field-required mr-1" ${defaults.required ? "checked" : ""}>Req</label>
+        <button type="button" class="col-span-1 bg-red-100 text-red-700 rounded-md text-xs remove-field">X</button>
+      `;
+      container.appendChild(row);
+      const typeEl = row.querySelector(".field-type");
+      typeEl.value = defaults.type || "text";
+      row.querySelector(".remove-field").addEventListener("click", () => row.remove());
+    }
+
+    function collectApplicationFormFields() {
+      const rows = document.querySelectorAll("#applicationFieldsContainer > div");
+      const fields = [];
+      rows.forEach((row, idx) => {
+        const label = row.querySelector(".field-label").value.trim();
+        let type = row.querySelector(".field-type").value;
+        const required = row.querySelector(".field-required").checked;
+        const options = row.querySelector(".field-options").value
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (!label) return;
+        if (type === "select" && options.length === 0) type = "text";
+        fields.push({
+          key: `field_${idx + 1}_${label.toLowerCase().replace(/[^a-z0-9]+/g, "_")}`,
+          label,
+          type,
+          required,
+          options: type === "select" ? options : [],
+        });
+      });
+      return fields;
+    }
+
+    document.getElementById("addFieldBtn").addEventListener("click", () => addApplicationFieldRow());
+    addApplicationFieldRow();
+
+    const postForm = document.getElementById("postForm");
+    postForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const company = document.getElementById("companyName").value.trim();
+      const title = document.getElementById("postJobTitle").value.trim();
+      const location = document.getElementById("postLocation").value.trim();
+      const type = document.getElementById("postType").value;
+      const salary = document.getElementById("postSalary").value.trim();
+      const desc = document.getElementById("postDesc").value.trim();
+      if (!company || !title || !location || !type || !desc) return alert("All required fields must be filled");
+      const payload = {
+        company,
+        title,
+        location,
+        type,
+        salary,
+        description: desc,
+        applicationForm: collectApplicationFormFields(),
+      };
+      let posted = false;
+      try {
+        const res = await apiFetch(`${API_BASE_URL}/jobs`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) posted = true;
+      } catch {
+        posted = false;
+      }
+
+      // Backward compatibility for older backend (without /admin/jobs)
+      if (!posted) {
+        const firstField = payload.applicationForm[0] || {};
+        const fallbackRes = await apiFetch(`${API_BASE_URL}/posts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            company,
+            type,
+            desc: `${title} | ${desc}`,
+            formType: firstField.type || "text",
+            formLabel: firstField.label || "Additional Details",
+            formOptions: Array.isArray(firstField.options) ? firstField.options.join(",") : "",
+          })
+        });
+        if (!fallbackRes.ok) {
+          const msg = await fallbackRes.text();
+          alert(msg || "Failed to publish job");
+          return;
+        }
+      }
+
+      alert("Job published successfully");
+      postForm.reset();
+      document.getElementById("applicationFieldsContainer").innerHTML = "";
+      addApplicationFieldRow();
+      fetchPosts();
+      fetchAllJobs();
+    });
+
+    async function fetchPosts() {
+      try {
+        let jobs = [];
+        const jobsRes = await apiFetch(`${API_BASE_URL}/jobs`);
+        if (jobsRes.ok) {
+          const data = await jobsRes.json();
+          if (Array.isArray(data)) {
+            jobs = data.filter((j) => (j.companyName || "").toLowerCase() === "admin");
+          }
+        }
+
+        // Backward compatibility: old backend has /admin/posts but not /admin/jobs
+        if (!jobs.length) {
+          const postsRes = await apiFetch(`${API_BASE_URL}/posts`);
+          if (postsRes.ok) {
+            const postsData = await postsRes.json();
+            if (Array.isArray(postsData)) {
+              jobs = postsData.map((p) => ({
+                _id: p._id,
+                title: p.desc || "Admin Job",
+                location: "Campus",
+                type: p.type || "",
+                description: p.desc || "",
+                applicationForm: [],
+              }));
+            }
+          }
+        }
+
+        allPosts = jobs;
+        displayPosts(allPosts);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function displayPosts(posts) {
+      const tbody = document.getElementById("postsTableBody");
+      tbody.innerHTML = "";
+      document.getElementById("adminPostsCount").innerText = `${posts.length} jobs`;
+      if (!posts.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-6 text-center text-slate-500">No jobs found.</td></tr>`;
+        return;
+      }
+
+      posts.forEach((post) => {
+        const fieldsCount = Array.isArray(post.applicationForm) ? post.applicationForm.length : 0;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="px-6 py-4 font-medium text-slate-700">${escapeHtml(post.title || "-")}</td>
+          <td class="px-6 py-4">${escapeHtml(post.location || "-")}</td>
+          <td class="px-6 py-4 capitalize">${escapeHtml(post.type || "-")}</td>
+          <td class="px-6 py-4">${fieldsCount}</td>
+          <td class="px-6 py-4">${escapeHtml(post.description || "-")}</td>
+          <td class="px-6 py-4 text-center">
+            <button onclick="deleteAnyJob('${post._id}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function fetchAllJobs() {
+      try {
+        let jobs = [];
+
+        const adminJobsRes = await apiFetch(`${API_BASE_URL}/jobs`);
+        if (adminJobsRes.ok) {
+          const data = await adminJobsRes.json();
+          if (Array.isArray(data)) jobs = data;
+        }
+
+        // Fallback for older backend where /api/admin/jobs is unavailable
+        if (!jobs.length) {
+          const publicRes = await fetch(PUBLIC_JOBS_URL);
+          if (publicRes.ok) {
+            const publicData = await publicRes.json();
+            if (Array.isArray(publicData)) jobs = publicData;
+          }
+        }
+
+        allJobs = jobs;
+        displayAllJobs(allJobs);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function displayAllJobs(jobs) {
+      const tbody = document.getElementById("allJobsTableBody");
+      tbody.innerHTML = "";
+      document.getElementById("allJobsCount").innerText = `${jobs.length} jobs`;
+      document.getElementById("allJobsCountCard").innerText = jobs.length;
+
+      if (!jobs.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-6 text-center text-slate-500">No jobs available.</td></tr>`;
+        return;
+      }
+
+      jobs.forEach((job) => {
+        const statusClass = job.status === "Active" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-700";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="px-6 py-4 font-medium text-slate-700">${escapeHtml(job.title || "-")}</td>
+          <td class="px-6 py-4">${escapeHtml(job.companyName || "Company")}</td>
+          <td class="px-6 py-4">${escapeHtml(job.type || "-")}</td>
+          <td class="px-6 py-4">${escapeHtml(job.location || "-")}</td>
+          <td class="px-6 py-4"><span class="inline-block px-2 py-1 text-xs rounded-full ${statusClass}">${escapeHtml(job.status || "Unknown")}</span></td>
+          <td class="px-6 py-4 text-center">
+            <button onclick="deleteAnyJob('${job._id}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function deleteAnyJob(id) {
+      if (!confirm("Delete this job from platform?")) return;
+      try {
+        const res = await apiFetch(`${API_BASE_URL}/jobs/${id}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Delete failed");
+      } catch {
+        // Backward compatibility for older backend using /admin/posts/:id
+        await apiFetch(`${API_BASE_URL}/posts/${id}`, { method: "DELETE" });
+      }
+      fetchAllJobs();
+      fetchPosts();
+    }
+
+    async function fetchResources() {
+      try {
+        const res = await apiFetch("http://localhost:5000/api/resources/admin/all");
+        const raw = await res.json();
+        const data = Array.isArray(raw) ? raw : [];
+        allResources = data;
+        displayResources(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function displayResources(resources) {
+      const tbody = document.getElementById("resourcesTableBody");
+      tbody.innerHTML = "";
+      if (!resources.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-6 text-center text-slate-500">No resources available.</td></tr>`;
+        return;
+      }
+
+      resources.forEach((item) => {
+        const status = item.status || "Pending";
+        const statusClass = status === "Approved"
+          ? "bg-green-100 text-green-700"
+          : status === "Rejected"
+            ? "bg-red-100 text-red-700"
+            : "bg-yellow-100 text-yellow-700";
+        const disableActions = status === "Approved";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="px-6 py-4 font-medium text-slate-700">${escapeHtml(item.title || "-")}</td>
+          <td class="px-6 py-4">${escapeHtml(item.category || "General")}</td>
+          <td class="px-6 py-4">
+            <div>${escapeHtml(item.uploaderName || "-")}</div>
+            <div class="text-xs text-slate-500">${escapeHtml(item.uploaderEmail || "")}</div>
+          </td>
+          <td class="px-6 py-4"><span class="inline-block px-2 py-1 text-xs rounded-full ${statusClass}">${escapeHtml(status)}</span></td>
+          <td class="px-6 py-4">
+            <a href="${item.fileUrl}" target="_blank" class="text-blue-600 hover:underline text-sm">Open file</a>
+          </td>
+          <td class="px-6 py-4 text-center space-x-2">
+            <button onclick="approveResource('${item._id}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded transition ${disableActions ? "opacity-50 cursor-not-allowed" : ""}" ${disableActions ? "disabled" : ""}>Approve</button>
+            <button onclick="rejectResource('${item._id}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition ${disableActions ? "opacity-50 cursor-not-allowed" : ""}" ${disableActions ? "disabled" : ""}>Reject</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function approveResource(id) {
+      await apiFetch(`http://localhost:5000/api/resources/admin/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Approved" })
+      });
+      fetchResources();
+    }
+
+    async function rejectResource(id) {
+      const reason = prompt("Reason for rejection (optional):") || "";
+      await apiFetch(`http://localhost:5000/api/resources/admin/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Rejected", rejectionReason: reason })
+      });
+      fetchResources();
+    }
+
+    function logoutAdmin() {
+      document.getElementById("accessCode").value = "";
+      document.getElementById("adminSection").classList.add("hidden");
+      document.getElementById("sidebar").classList.add("hidden");
+      document.getElementById("navbar").classList.add("hidden");
+      document.getElementById("loginSection").classList.remove("hidden");
+      errorMsg.classList.add("hidden");
+      adminToken = "";
+      legacyMode = false;
+    }
+  </script>
+</body>
+</html>

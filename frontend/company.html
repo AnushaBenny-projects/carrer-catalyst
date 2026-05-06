@@ -1,0 +1,679 @@
+<!-- Purpose: Renders the company page for the Career Catalyst frontend. -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Career Catalyst — Employer Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .card-bg { background: linear-gradient(135deg,#2b6df6,#4aa5ff); }
+    .card-bg-green { background: linear-gradient(135deg,#1fa25d,#24d39a); }
+    .card-bg-purple { background: linear-gradient(135deg,#8b5cf6,#a78bfa); }
+    .glass { background: rgba(255,255,255,0.9); backdrop-filter: blur(6px); }
+    #notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      display: none;
+      font-weight: 500;
+      color: white;
+      z-index: 1000;
+    }
+    #notification.success { background-color: #1fa25d; }
+    #notification.error { background-color: #e53e3e; }
+    #notification.info { background-color: #3182ce; }
+    /* Modal overlay */
+    #appModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+    #appModal .modal-content { background: white; padding: 20px; border-radius: 8px; max-width: 500px; width: 90%; max-height: 80%; overflow-y: auto; }
+    .status-badge {
+  padding: 6px 6px;
+  border-radius:100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+}
+
+.status-active {
+  background-color: #dcfce7; /* light green */
+  color: #15803d;           /* dark green text */
+}
+
+.status-closed {
+  background-color: #fee2e2; /* light red */
+  color: #b91c1c;
+}
+
+.status-pending {
+  background-color: #fef9c3; /* yellow */
+  color: #a16207;
+}
+
+  </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800 overflow-x-hidden">
+  <div id="notification"></div>
+
+  <div id="appModal" class="flex">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold" id="modalJobTitle">Applicants</h3>
+        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-800"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="modalApplicants" class="space-y-3"></div>
+    </div>
+  </div>
+
+  <div class="min-h-screen flex">
+    <!-- SIDEBAR -->
+    <aside class="w-72 bg-white border-r shadow-sm hidden md:block">
+      <div class="p-6 flex items-center gap-3">
+        <img id="sidebarLogo" src="./assets/CareerCatalyst.png" alt="Company Logo" class="w-48 h-auto rounded-md object-contain"/>
+      </div>
+      <nav class="mt-6 px-4">
+        <ul>
+          <li><button onclick="showView('dashboard')" id="nav-dashboard" class="w-full text-left flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 active:bg-gray-100"><i class="fa-solid fa-gauge-high text-blue-600"></i> Dashboard</button></li>
+          <li><button onclick="showView('postjob')" id="nav-postjob" class="w-full text-left flex items-center gap-3 p-3 rounded-md hover:bg-gray-50"><i class="fa-solid fa-briefcase-medical text-green-600"></i> Post Job</button></li>
+          <li><button onclick="showView('manage')" id="nav-manage" class="w-full text-left flex items-center gap-3 p-3 rounded-md hover:bg-gray-50"><i class="fa-solid fa-clipboard-list text-purple-600"></i> Manage Jobs</button></li>
+          <li><button onclick="showView('company')" id="nav-company" class="w-full text-left flex items-center gap-3 p-3 rounded-md hover:bg-gray-50"><i class="fa-solid fa-building text-gray-600"></i> Company Profile</button></li>
+        </ul>
+      </nav>
+      <div class="mt-auto p-6">
+        <button onclick="logout()" class="w-full px-4 py-2 rounded-md border text-sm text-gray-700 hover:bg-gray-50">Logout</button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="flex-1 p-6">
+      <!-- HEADER -->
+      <header class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-semibold">Welcome back, <span id="headerLoginName">Recruiter</span>!</h1>
+          <p class="text-sm text-gray-500">Here's what's happening with your jobs today.</p>
+        </div>
+        <div class="flex items-center gap-3 text-gray-600 text-xl">
+          <i class="fa-solid fa-user"></i>
+        </div>
+      </header>
+
+      <!-- DASHBOARD VIEW -->
+      <section id="view-dashboard">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="p-6 rounded-lg card-bg text-white shadow-md">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm">Active Jobs</div>
+                <div id="activeCount" class="text-3xl font-bold">0</div>
+              </div>
+              <div class="p-3 bg-white/15 rounded-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="p-6 rounded-lg card-bg-green text-white shadow-md">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm">Total Applicants</div>
+                <div id="appCount" class="text-3xl font-bold">0</div>
+              </div>
+              <div class="p-3 bg-white/15 rounded-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V8H2v12h5"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="p-6 rounded-lg card-bg-purple text-white shadow-md">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm">Hired</div>
+                <div id="hiredCount" class="text-3xl font-bold">0</div>
+              </div>
+              <div class="p-3 bg-white/15 rounded-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="glass p-6 rounded-lg shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold">Recent Job Posts</h3>
+              <button onclick="showView('manage')" class="text-sm text-blue-600">View all</button>
+            </div>
+            <div id="jobsList" class="space-y-3"></div>
+          </div>
+          <div class="glass p-6 rounded-lg shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold">Recent Applications</h3>
+              <button 
+  onclick="showView('manage')" 
+  class="text-sm text-blue-00 hover:underline transition">
+  View all
+</button>
+            </div>
+            <div id="appsList" class="space-y-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- POST JOB VIEW -->
+      <section id="view-postjob" class="hidden">
+        <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold">Post a Job</h2>
+            <button onclick="showView('dashboard')" class="text-sm text-gray-500">Back to dashboard</button>
+          </div>
+          <form id="jobForm" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div><label class="text-sm">Job Title</label><input required name="title" class="w-full mt-1 px-3 py-2 border rounded-md" placeholder="e.g. Front-End Developer" /></div>
+              <div><label class="text-sm">Location</label><input required name="location" class="w-full mt-1 px-3 py-2 border rounded-md" placeholder="City, Country" /></div>
+            </div>
+            <div><label class="text-sm">Job Type</label>
+              <select name="type" class="w-full mt-1 px-3 py-2 border rounded-md">
+                <option>Full-time</option><option>Part-time</option><option>Contract</option><option>Internship</option><option>Remote</option>
+              </select>
+            </div>
+            <div><label class="text-sm">Salary (optional)</label><input name="salary" class="w-full mt-1 px-3 py-2 border rounded-md" placeholder="e.g. ₹6,00,000 - ₹8,00,000" /></div>
+            <div><label class="text-sm">Description</label><textarea required name="description" rows="6" class="w-full mt-1 px-3 py-2 border rounded-md" placeholder="Write the job description, responsibilities, requirements..."></textarea></div>
+            <div class="border rounded-md p-4 bg-gray-50">
+              <div class="flex items-center justify-between mb-3">
+                <label class="text-sm font-medium">Application Form Fields (optional)</label>
+                <button type="button" onclick="addApplicationFieldRow()" class="px-3 py-1.5 bg-slate-200 text-slate-700 rounded-md text-xs">+ Add Field</button>
+              </div>
+              <div id="applicationFieldsContainer" class="space-y-2"></div>
+              <p class="text-xs text-gray-500 mt-2">Students must fill these fields while applying. Resume is required from student profile.</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">Publish Job</button>
+              <button type="button" onclick="document.getElementById('jobForm').reset()" class="px-4 py-2 border rounded-md">Reset</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- MANAGE JOBS VIEW -->
+      <section id="view-manage" class="hidden">
+        <div class="bg-white p-6 rounded-lg shadow">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold">Manage Jobs</h2>
+            <button onclick="showView('postjob')" class="px-3 py-2 bg-green-600 text-white rounded-md">New Job</button>
+          </div>
+          <div id="manageList" class="space-y-3"></div>
+        </div>
+      </section>
+      
+
+      <!-- COMPANY PROFILE VIEW -->
+      <section id="view-company" class="hidden">
+        <div class="bg-white p-6 rounded-lg shadow max-w-3xl">
+          <h2 class="text-xl font-semibold mb-4">Company Profile</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="text-sm">Company Name</label><input id="companyName" class="w-full mt-1 px-3 py-2 border rounded-md"/></div>
+            <div><label class="text-sm">Website</label><input id="companyWebsite" class="w-full mt-1 px-3 py-2 border rounded-md"/></div>
+          </div>
+          <div class="mt-4"><label class="text-sm">Company Description</label><textarea id="companyDesc" class="w-full mt-1 px-3 py-2 border rounded-md" rows="4"></textarea></div>
+          <div class="mt-4"><button onclick="saveCompany()" class="px-4 py-2 bg-blue-600 text-white rounded-md">Save Profile</button></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+  const API_BASE = "http://localhost:5000/api";
+  const token = localStorage.getItem("token");
+
+  if (!token) window.location.href = "login.html";
+
+  // ================= NOTIFICATION =================
+  function notify(message, type = "info", duration = 2500) {
+    const n = document.getElementById("notification");
+    n.innerText = message;
+    n.className = type;
+    n.style.display = "block";
+    setTimeout(() => (n.style.display = "none"), duration);
+  }
+
+  // ================= HEADER NAME =================
+  const headerLoginName = document.getElementById("headerLoginName");
+  headerLoginName.innerText = localStorage.getItem("loginName") || "Recruiter";
+
+  // ================= VIEW SWITCH =================
+  function showView(view) {
+    ["dashboard", "postjob", "manage", "company"].forEach(v => {
+      document.getElementById("view-" + v).classList.toggle("hidden", v !== view);
+    });
+  }
+
+  // ================= JOB DATA =================
+  let jobs = [];
+  let applications = [];
+  let lastOpenedJobId = null;
+  let lastOpenedJobTitle = "";
+
+  function escapeHtml(value = "") {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function addApplicationFieldRow(defaults = {}) {
+    const container = document.getElementById("applicationFieldsContainer");
+    const row = document.createElement("div");
+    row.className = "grid grid-cols-12 gap-2";
+    row.innerHTML = `
+      <input class="col-span-5 px-3 py-2 border rounded-md text-sm field-label" placeholder="Question label" value="${defaults.label || ""}" />
+      <select class="col-span-3 px-2 py-2 border rounded-md text-sm field-type">
+        <option value="text">Text</option>
+        <option value="textarea">Textarea</option>
+        <option value="number">Number</option>
+        <option value="date">Date</option>
+        <option value="select">Select</option>
+      </select>
+      <input class="col-span-2 px-3 py-2 border rounded-md text-sm field-options" placeholder="a,b,c" value="${(defaults.options || []).join(",")}" />
+      <label class="col-span-1 flex items-center justify-center text-xs"><input type="checkbox" class="field-required mr-1" ${defaults.required ? "checked" : ""}>Req</label>
+      <button type="button" class="col-span-1 bg-red-100 text-red-700 rounded-md text-xs remove-field">X</button>
+    `;
+    container.appendChild(row);
+    const typeEl = row.querySelector(".field-type");
+    typeEl.value = defaults.type || "text";
+    row.querySelector(".remove-field").addEventListener("click", () => row.remove());
+  }
+
+  function collectApplicationFormFields() {
+    const rows = document.querySelectorAll("#applicationFieldsContainer > div");
+    const fields = [];
+    rows.forEach((row, idx) => {
+      const label = row.querySelector(".field-label").value.trim();
+      let type = row.querySelector(".field-type").value;
+      const required = row.querySelector(".field-required").checked;
+      const options = row.querySelector(".field-options").value
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (!label) return;
+      const normalizedLabel = label.toLowerCase().replace(/[^a-z0-9]+/g, "");
+      if (normalizedLabel === "resume" || normalizedLabel.includes("resume")) return;
+      if (type === "select" && options.length === 0) type = "text";
+      fields.push({
+        key: `field_${idx + 1}_${label.toLowerCase().replace(/[^a-z0-9]+/g, "_")}`,
+        label,
+        type,
+        required,
+        options: type === "select" ? options : [],
+      });
+    });
+    return fields;
+  }
+
+  // ================= LOAD JOBS =================
+  async function loadJobs() {
+    const res = await fetch(`${API_BASE}/jobs`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!res.ok) {
+      notify("Failed to load jobs", "error");
+      return;
+    }
+
+    jobs = await res.json();
+
+    // 👉 FIRST JOB FLOW
+    if (jobs.length === 0) {
+      showView("postjob");
+      notify("Create your first job to get started🚀", "info", 3000);
+      renderEmptyDashboard();
+      return;
+    }
+
+    showView("dashboard");
+    renderJobs();
+    loadApplications();
+  }
+
+  // ================= EMPTY DASHBOARD =================
+  function renderEmptyDashboard() {
+    document.getElementById("activeCount").innerText = 0;
+    document.getElementById("appCount").innerText = 0;
+    document.getElementById("hiredCount").innerText = 0;
+    document.getElementById("jobsList").innerHTML =
+      `<div class="text-gray-500 text-sm">No jobs posted yet.</div>`;
+    document.getElementById("manageList").innerHTML = "";
+  }
+
+  // ================= RENDER JOBS =================
+  function renderJobs() {
+    const jobsList = document.getElementById("jobsList");
+    const manageList = document.getElementById("manageList");
+
+    jobsList.innerHTML = "";
+    manageList.innerHTML = "";
+
+    jobs.forEach(job => {
+      const initials = job.title
+        .split(" ")
+        .map(s => s[0])
+        .join("")
+        .slice(0, 2);
+
+      // Dashboard list
+      jobsList.innerHTML += `
+        <div class="p-3 border rounded-md bg-white flex justify-between">
+          <div class="flex gap-3">
+            <div class="w-12 h-12 bg-blue-100 flex items-center justify-center font-bold text-blue-600">
+              ${initials}
+            </div>
+            <div>
+              <div class="font-medium">${job.title}</div>
+              <div class="text-xs text-gray-500">${job.location}</div>
+            </div>
+          </div>
+          <span class="status-badge ${
+  job.status === "Active"
+    ? "status-active"
+    : job.status === "Closed"
+    ? "status-closed"
+    : "status-pending"
+}">
+  ${job.status}
+</span>
+
+        </div>
+      `;
+
+      // Manage list
+      manageList.innerHTML += `
+        <div class="p-3 border rounded-md bg-white flex justify-between items-center">
+          <div>
+            <div class="font-medium">${job.title}</div>
+            <div class="text-xs text-gray-500">${job.location} · ${job.type}</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              data-action="view-applicants"
+              data-job-id="${job._id}"
+              data-job-title="${String(job.title).replace(/"/g, "&quot;")}"
+              class="bg-blue-600 text-white px-3 py-1 rounded-md text-sm">
+              View Applicants
+            </button>
+            <button onclick="deleteJob('${job._id}')"
+              class="bg-red-500 text-white px-3 py-1 rounded-md text-sm">
+              Delete
+            </button>
+          </div>
+        </div>
+      `;
+    });
+
+    document.getElementById("activeCount").innerText = jobs.length;
+  }
+
+  // ================= LOAD APPLICATIONS =================
+  async function loadApplications() {
+    const res = await fetch(`${API_BASE}/applications`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!res.ok) {
+      let msg = "Failed to load applications";
+      try {
+        const data = await res.json();
+        if (data?.message) msg = data.message;
+      } catch {}
+      notify(`${msg} (HTTP ${res.status})`, "error");
+      return;
+    }
+
+    applications = await res.json();
+    renderApplications();
+  }
+
+  function renderApplications() {
+    const appsList = document.getElementById("appsList");
+    appsList.innerHTML = "";
+
+    if (!applications.length) {
+      appsList.innerHTML = `<div class="text-gray-500 text-sm">No applications yet.</div>`;
+    } else {
+      applications.slice(0, 6).forEach(app => {
+        appsList.innerHTML += `
+          <div class="p-3 border rounded-md bg-white flex justify-between">
+            <div>
+              <div class="font-medium">${app.candidateName || "Candidate"}</div>
+              <div class="text-xs text-gray-500">${app.jobTitle || "Job"}</div>
+            </div>
+            <span class="status-badge status-pending">
+              ${app.status || "Pending"}
+            </span>
+          </div>
+        `;
+      });
+    }
+
+    document.getElementById("appCount").innerText = applications.length;
+    document.getElementById("hiredCount").innerText =
+      applications.filter(a => (a.status || "").toLowerCase() === "hired").length;
+  }
+
+  // ================= APPLICANTS MODAL =================
+  async function openApplicants(jobId, jobTitle) {
+    const res = await fetch(`${API_BASE}/applications/job/${jobId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!res.ok) {
+      let msg = "Failed to load applicants";
+      try {
+        const data = await res.json();
+        if (data?.message) msg = data.message;
+      } catch {}
+      notify(`${msg} (HTTP ${res.status})`, "error");
+      return;
+    }
+
+    const apps = await res.json();
+    lastOpenedJobId = jobId;
+    lastOpenedJobTitle = jobTitle;
+    document.getElementById("modalJobTitle").innerText = `Applicants — ${jobTitle}`;
+    const modalBody = document.getElementById("modalApplicants");
+    modalBody.innerHTML = "";
+
+    if (!apps.length) {
+      modalBody.innerHTML = `<div class="text-gray-500 text-sm">No applicants yet.</div>`;
+    } else {
+      apps.forEach(app => {
+        const answers = Array.isArray(app.formAnswers) && app.formAnswers.length
+          ? app.formAnswers.map(a => `<div class="text-xs text-gray-600"><b>${a.label}:</b> ${a.value || "-"}</div>`).join("")
+          : `<div class="text-xs text-gray-400">No extra form answers</div>`;
+        const messageInputId = `app-msg-${app._id}`;
+        const safeMessage = escapeHtml(app.recruiterMessage || "");
+        modalBody.innerHTML += `
+          <div class="p-3 border rounded-md bg-white flex justify-between items-center">
+            <div>
+              <div class="font-medium">${app.candidateName || "Candidate"}</div>
+              <div class="text-xs text-gray-500">${app.jobTitle || "Job"}</div>
+              <div class="text-xs text-gray-400 mt-1">Status: ${app.status || "Pending"}</div>
+              <div class="mt-2 space-y-1">${answers}</div>
+              ${app.candidateResumeUrl ? `<a href="${app.candidateResumeUrl}" target="_blank" class="inline-block mt-2 text-xs text-blue-600 hover:underline">View Resume</a>` : `<div class="mt-2 text-xs text-red-500">No resume</div>`}
+              <div class="mt-2">
+                <label for="${messageInputId}" class="block text-xs text-gray-600 mb-1">Message to candidate</label>
+                <textarea id="${messageInputId}" rows="2" class="w-full min-w-0 px-2 py-1 text-xs border rounded-md" placeholder="Optional feedback">${safeMessage}</textarea>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                class="px-3 py-1 rounded-md text-sm bg-green-600 text-white"
+                onclick="updateApplicationStatus('${app._id}', 'Accepted', '${messageInputId}')">
+                Accept
+              </button>
+              <button
+                class="px-3 py-1 rounded-md text-sm bg-red-500 text-white"
+                onclick="updateApplicationStatus('${app._id}', 'Rejected', '${messageInputId}')">
+                Reject
+              </button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    document.getElementById("appModal").style.display = "flex";
+  }
+
+  function closeModal() {
+    document.getElementById("appModal").style.display = "none";
+  }
+
+  async function updateApplicationStatus(appId, status, messageInputId = "") {
+    const messageEl = messageInputId ? document.getElementById(messageInputId) : null;
+    const message = messageEl ? messageEl.value : "";
+    const res = await fetch(`${API_BASE}/applications/${appId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ status, message })
+    });
+
+    if (!res.ok) {
+      let msg = "Failed to update application";
+      try {
+        const data = await res.json();
+        if (data?.message) msg = data.message;
+      } catch {}
+      notify(`${msg} (HTTP ${res.status})`, "error");
+      return;
+    }
+
+    notify(`Application ${status.toLowerCase()}`, "success");
+    loadApplications();
+    if (document.getElementById("appModal").style.display === "flex") {
+      openApplicants(lastOpenedJobId, lastOpenedJobTitle);
+    }
+  }
+
+  // ================= MANAGE LIST EVENTS =================
+  document.getElementById("manageList").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action='view-applicants']");
+    if (!btn) return;
+    const jobId = btn.getAttribute("data-job-id");
+    const jobTitle = btn.getAttribute("data-job-title") || "Job";
+    openApplicants(jobId, jobTitle);
+  });
+
+  // ================= CREATE JOB =================
+  async function createJobHandler(e) {
+    e.preventDefault();
+    const f = e.target;
+
+    const res = await fetch(`${API_BASE}/jobs`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        title: f.title.value,
+        location: f.location.value,
+        type: f.type.value,
+        salary: f.salary.value,
+        description: f.description.value,
+        applicationForm: collectApplicationFormFields()
+      })
+    });
+
+    if (!res.ok) {
+      notify("Job creation failed", "error");
+      return;
+    }
+
+    notify("Job posted successfully!", "success");
+    f.reset();
+    document.getElementById("applicationFieldsContainer").innerHTML = "";
+    addApplicationFieldRow();
+    loadJobs();
+  }
+
+  // ================= DELETE JOB =================
+  async function deleteJob(id) {
+    if (!confirm("Delete this job?")) return;
+
+    await fetch(`${API_BASE}/jobs/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    notify("Job deleted", "success");
+    loadJobs();
+  }
+
+  // ================= LOGOUT =================
+  function logout() {
+    localStorage.clear();
+    window.location.href = "login.html";
+  }
+// ================= COMPANY PROFILE =================
+async function loadCompanyProfile() {
+  try {
+    const res = await fetch(`${API_BASE}/company/profile`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+
+    document.getElementById("companyName").value = data.name || "";
+    document.getElementById("companyWebsite").value = data.website || "";
+    document.getElementById("companyDesc").value = data.description || "";
+  } catch (err) {
+    notify("Failed to load company profile", "error");
+  }
+}
+
+async function saveCompany() {
+  const payload = {
+    name: document.getElementById("companyName").value,
+    website: document.getElementById("companyWebsite").value,
+    description: document.getElementById("companyDesc").value
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/company/profile`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      notify("Failed to save company profile", "error");
+      return;
+    }
+
+    notify("Company profile saved successfully ✅", "success");
+    showView("dashboard");
+  } catch {
+    notify("Server error while saving profile", "error");
+  }
+}
+
+  // ================= INIT =================
+  document.getElementById("jobForm").onsubmit = createJobHandler;
+  addApplicationFieldRow();
+  loadJobs();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<!-- Purpose: Renders the resource-sharing page for the Career Catalyst frontend. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Career Catalyst - Resource Sharing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen overflow-x-hidden">
+  <nav class="bg-white border-b shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-8">
+        <img src="./assets/CareerCatalyst.png" class="w-36 h-auto cursor-pointer" onclick="window.location.href='student-dashboard.html'" />
+        <a href="student-dashboard.html" class="text-slate-700 hover:text-blue-600 font-medium">Dashboard</a>
+      </div>
+      <button id="logoutBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Logout</button>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <h1 class="text-3xl font-bold text-slate-900 mb-6">Resource Sharing</h1>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <section class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+        <h2 class="text-xl font-semibold text-slate-900 mb-3">Upload Resource</h2>
+        <p class="text-sm text-slate-500 mb-4">Upload notes for Aptitude or Coding. Admin will review and approve.</p>
+        <form id="uploadForm" class="space-y-3" enctype="multipart/form-data">
+          <input name="title" type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none" placeholder="Resource title" required />
+          <select name="category" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none" required>
+            <option value="">Select module</option>
+            <option value="Aptitude">Aptitude</option>
+            <option value="Coding">Coding</option>
+          </select>
+          <textarea name="description" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none" placeholder="Description (optional)"></textarea>
+          <input name="resourceFile" type="file" class="w-full text-sm text-slate-700 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer" required />
+          <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition font-medium">Upload</button>
+        </form>
+        <p id="uploadMsg" class="text-sm mt-3"></p>
+      </section>
+
+      <section class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+        <h2 class="text-xl font-semibold text-slate-900 mb-3">My Uploads</h2>
+        <div id="myUploads" class="space-y-3 max-h-[370px] overflow-y-auto">
+          <p class="text-slate-500 text-sm">Loading...</p>
+        </div>
+      </section>
+    </div>
+
+    <section class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm mb-6">
+      <h2 class="text-2xl font-semibold text-slate-900 mb-4">Aptitude Resources</h2>
+      <div id="aptitudeList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+    </section>
+
+    <section class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+      <h2 class="text-2xl font-semibold text-slate-900 mb-4">Coding Resources</h2>
+      <div id="codingList" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+    </section>
+  </main>
+
+  <script>
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    if (!token || role !== "candidate") {
+      window.location.href = "login.html";
+    }
+
+    const { protocol, hostname, origin } = window.location;
+    const isLocal = hostname === "127.0.0.1" || hostname === "localhost";
+    const isFile = protocol === "file:";
+    const BACKEND_BASE = isFile ? "http://localhost:5000" : (isLocal ? `${protocol}//localhost:5000` : `${origin}`);
+    const API_BASE = `${BACKEND_BASE}/api/resources`;
+
+    const uploadForm = document.getElementById("uploadForm");
+    const uploadMsg = document.getElementById("uploadMsg");
+    const myUploads = document.getElementById("myUploads");
+    const aptitudeList = document.getElementById("aptitudeList");
+    const codingList = document.getElementById("codingList");
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "role.html";
+    });
+
+    function escapeHtml(value = "") {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function badgeClass(status) {
+      const s = String(status || "").toLowerCase();
+      if (s === "approved") return "bg-green-100 text-green-700";
+      if (s === "rejected") return "bg-red-100 text-red-700";
+      return "bg-yellow-100 text-yellow-700";
+    }
+
+    function renderResourceCard(item) {
+      return `
+        <article class="border border-slate-200 rounded-xl p-4">
+          <h3 class="text-base font-semibold text-slate-900">${escapeHtml(item.title || "Untitled")}</h3>
+          <p class="text-sm text-slate-600 mt-2 min-h-[40px]">${escapeHtml(item.description || "No description")}</p>
+          <p class="text-xs text-slate-500 mt-2">By ${escapeHtml(item.uploaderName || item.uploaderEmail || "User")}</p>
+          <a href="${item.fileUrl}" target="_blank" class="inline-block mt-3 text-sm text-blue-600 hover:underline">Open Resource</a>
+        </article>
+      `;
+    }
+
+    async function loadPublicResources() {
+      aptitudeList.innerHTML = `<p class="text-slate-500 text-sm">Loading...</p>`;
+      codingList.innerHTML = `<p class="text-slate-500 text-sm">Loading...</p>`;
+      try {
+        const res = await fetch(`${API_BASE}/public`);
+        if (!res.ok) throw new Error("failed");
+        const list = await res.json();
+        const aptitude = list.filter((x) => String(x.category || "").toLowerCase() === "aptitude");
+        const coding = list.filter((x) => String(x.category || "").toLowerCase() === "coding");
+
+        aptitudeList.innerHTML = aptitude.length ? aptitude.map(renderResourceCard).join("") : `<p class="text-slate-500 text-sm">No aptitude resources yet.</p>`;
+        codingList.innerHTML = coding.length ? coding.map(renderResourceCard).join("") : `<p class="text-slate-500 text-sm">No coding resources yet.</p>`;
+      } catch (err) {
+        const msg = err?.message ? `Failed to load resources (${escapeHtml(err.message)}).` : "Failed to load resources.";
+        aptitudeList.innerHTML = `<p class="text-red-500 text-sm">${msg}</p>`;
+        codingList.innerHTML = `<p class="text-red-500 text-sm">${msg}</p>`;
+      }
+    }
+
+    async function loadMyUploads() {
+      myUploads.innerHTML = `<p class="text-slate-500 text-sm">Loading...</p>`;
+      try {
+        const res = await fetch(`${API_BASE}/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            localStorage.clear();
+            window.location.href = "login.html";
+            return;
+          }
+          const raw = await res.text();
+          throw new Error(`HTTP ${res.status}${raw ? `: ${raw}` : ""}`);
+        }
+        const list = await res.json();
+        if (!Array.isArray(list) || !list.length) {
+          myUploads.innerHTML = `<p class="text-slate-500 text-sm">No uploads yet.</p>`;
+          return;
+        }
+
+        myUploads.innerHTML = list.map((item) => `
+          <div class="border border-slate-200 rounded-lg p-3">
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="text-sm font-semibold text-slate-900">${escapeHtml(item.title || "Untitled")}</h3>
+              <span class="text-xs px-2 py-1 rounded-full ${badgeClass(item.status)}">${escapeHtml(item.status || "Pending")}</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">${escapeHtml(item.category || "General")}</p>
+            <a href="${item.fileUrl}" target="_blank" class="inline-block mt-2 text-xs text-blue-600 hover:underline">View file</a>
+            ${item.rejectionReason ? `<p class="text-xs text-red-600 mt-1">Reason: ${escapeHtml(item.rejectionReason)}</p>` : ""}
+          </div>
+        `).join("");
+      } catch (err) {
+        const msg = err?.message ? `Failed to load uploads (${escapeHtml(err.message)}).` : "Failed to load uploads.";
+        myUploads.innerHTML = `<p class="text-red-500 text-sm">${msg}</p>`;
+      }
+    }
+
+    uploadForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      uploadMsg.className = "text-sm mt-3 text-slate-600";
+      uploadMsg.textContent = "Uploading...";
+      try {
+        const formData = new FormData(uploadForm);
+        const res = await fetch(`${API_BASE}`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            localStorage.clear();
+            window.location.href = "login.html";
+            return;
+          }
+          uploadMsg.className = "text-sm mt-3 text-red-600";
+          uploadMsg.textContent = data.message || `Upload failed (HTTP ${res.status})`;
+          return;
+        }
+        uploadForm.reset();
+        uploadMsg.className = "text-sm mt-3 text-green-600";
+        uploadMsg.textContent = "Uploaded successfully. Waiting for admin approval.";
+        await loadMyUploads();
+        await loadPublicResources();
+      } catch (err) {
+        uploadMsg.className = "text-sm mt-3 text-red-600";
+        uploadMsg.textContent = err?.message ? `Upload failed (${err.message})` : "Upload failed";
+      }
+    });
+
+    loadMyUploads();
+    loadPublicResources();
+  </script>
+</body>
+</html>

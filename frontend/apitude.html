@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<!-- Purpose: Renders the apitude page for the Career Catalyst frontend. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Career Catalyst | Aptitude Practice</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-50 text-gray-800 overflow-x-hidden">
+
+<!-- ================= NAVBAR ================= -->
+<nav class="bg-white border-b sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+
+    <img src="./assets/CareerCatalyst.png" class="w-48 h-auto" />
+
+    <div class="hidden md:flex gap-8 font-medium text-gray-700">
+      <a href="#numerical" class="hover:text-emerald-600">Numerical</a>
+      <a href="#logical" class="hover:text-emerald-600">Logical</a>
+      <a href="#verbal" class="hover:text-emerald-600">Verbal</a>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="relative">
+        <input id="searchInput" onkeyup="filterTopics()"
+          placeholder="Search topics..."
+          class="pl-4 pr-9 py-2 border rounded-full text-sm
+                 focus:ring-2 focus:ring-emerald-500 outline-none" />
+        <span class="absolute right-3 top-2.5 text-gray-400">🔍</span>
+      </div>
+
+      <div class="w-9 h-9 rounded-full bg-emerald-50 text-emerald-700
+                  flex items-center justify-center font-semibold">S</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<section class="bg-white py-24">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-20 items-center">
+
+    <div>
+      <h1 class="text-4xl font-bold text-gray-900 mb-6 leading-tight">
+        Aptitude Practice for Placements
+      </h1>
+      <p class="text-gray-600 text-lg max-w-xl leading-relaxed">
+        Practice Numerical Ability, Logical Reasoning, and Verbal Ability
+        with structured topics designed for campus placements and
+        competitive exams.
+      </p>
+    </div>
+
+    <div class="flex justify-center relative">
+      <div class="absolute w-80 h-80 bg-emerald-100/40 rounded-full blur-3xl"></div>
+      <img src="assets/hero.png"
+           class="relative w-full max-w-lg h-[420px] object-contain">
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= NUMERICAL ================= -->
+<section id="numerical" class="py-20">
+<div class="max-w-7xl mx-auto px-6">
+
+<h2 class="section-title mb-10">
+  <img src="assets/aptitude.png"> Numerical Ability
+</h2>
+
+<div class="topic-grid">
+  <div class="topic" onclick="openTopic('Number System')"><img src="assets/numbersystem.png"> Number System</div>
+  <div class="topic" onclick="openTopic('Percentages')"><img src="assets/icons/percentage.png"> Percentages</div>
+  <div class="topic" onclick="openTopic('Ratio and Proportion')"><img src="assets/icons/ratio.png"> Ratio and Proportion</div>
+  <div class="topic" onclick="openTopic('Averages')"><img src="assets/icons/avg.png"> Averages</div>
+  <div class="topic" onclick="openTopic('Profit and Loss')"><img src="assets/icons/profit.png"> Profit and Loss</div>
+  <div class="topic" onclick="openTopic('Simple Interest')"><img src="assets/icons/si.png"> Simple Interest</div>
+  <div class="topic" onclick="openTopic('Compound Interest')"><img src="assets/icons/ci.png"> Compound Interest</div>
+  <div class="topic" onclick="openTopic('Time and Work')"><img src="assets/icons/timework.png"> Time and Work</div>
+  <div class="topic" onclick="openTopic('Time Speed Distance')"><img src="assets/icons/timespeed.png"> Time, Speed and Distance</div>
+  <div class="topic" onclick="openTopic('Mixtures and Allegations')"><img src="assets/icons/mix.png"> Mixtures and Allegations</div>
+  <div class="topic" onclick="openTopic('Data Interpretation')"><img src="assets/icons/Di.png"> Data Interpretation</div>
+  <div class="topic" onclick="openTopic('Permutation and Combination')"><img src="assets/icons/per.png"> Permutation and Combination</div>
+  <div class="topic" onclick="openTopic('Probability')"><img src="assets/icons/prob.png"> Probability</div>
+  <div class="topic" onclick="openTopic('Algebra')"><img src="assets/icons/algebra.png"> Algebra</div>
+  <div class="topic" onclick="openTopic('Mensuration')"><img src="assets/icons/mensuration.png"> Mensuration</div>
+  <div class="topic" onclick="openTopic('Elementary Statics')"><img src="assets/icons/Es.png"> Elementary Statics</div>
+  <div class="topic" onclick="openTopic('Problems on Trains')"><img src="assets/icons/train.png"> Problems on Trains</div>
+  <div class="topic" onclick="openTopic('LCM and HCF')"><img src="assets/icons/lcmhcf.png"> LCM and HCF</div>
+  <div class="topic" onclick="openTopic('Problems on Ages')"><img src="assets/icons/partner.png"> Partnership</div>
+</div>
+
+</div>
+</section>
+
+<!-- ================= LOGICAL ================= -->
+<section id="logical" class="py-20 bg-white">
+<div class="max-w-7xl mx-auto px-6">
+
+<h2 class="section-title mb-10">
+  <img src="assets/logicalreasoning.png"> Logical Reasoning
+</h2>
+
+<div class="topic-grid">
+  <div class="topic" onclick="openTopic('Number Series')"><img src="assets/icons/numberseries.png"> Number Series</div>
+  <div class="topic" onclick="openTopic('Alphabet Series')"><img src="assets/icons/alphabet.png"> Alphabet Series</div>
+  <div class="topic" onclick="openTopic('Coding Decoding')"><img src="assets/icons/codingdecoding.png"> Coding–Decoding</div>
+  <div class="topic" onclick="openTopic('Direction Sense')"><img src="assets/icons/direction.png"> Direction Sense</div>
+  <div class="topic" onclick="openTopic('Blood Relations')"><img src="assets/icons/blood.png"> Blood Relations</div>
+  <div class="topic" onclick="openTopic('Seating Arrangement')"><img src="assets/icons/seating.png"> Seating Arrangement</div>
+  <div class="topic" onclick="openTopic('Puzzles')"><img src="assets/icons/puzzle.png"> Puzzles</div>
+  <div class="topic" onclick="openTopic('Syllogisms')"><img src="assets/icons/syllogism.png"> Syllogisms</div>
+  <div class="topic" onclick="openTopic('Statement and Conclusion')"><img src="assets/icons/stmt.png"> Statement & Conclusion</div>
+  <div class="topic" onclick="openTopic('Statement and Assumption')"><img src="assets/icons/stmtassump.png"> Statement & Assumption</div>
+  <div class="topic" onclick="openTopic('Statement and Argument')"><img src="assets/icons/argument.png"> Statement & Argument</div>
+  <div class="topic" onclick="openTopic('Data Sufficiency')"><img src="assets/icons/ds.png"> Data Sufficiency</div>
+  <div class="topic" onclick="openTopic('Input Output')"><img src="assets/icons/ipop.png"> Input–Output</div>
+  <div class="topic" onclick="openTopic('Analogy')"><img src="assets/icons/analogy.png"> Analogy</div>
+  <div class="topic" onclick="openTopic('Classification')"><img src="assets/icons/classification.png"> Classification</div>
+  <div class="topic" onclick="openTopic('Cause and Effect')"><img src="assets/icons/causeandeffect.png"> Cause and Effect</div>
+  <div class="topic" onclick="openTopic('Venn Diagrams')"><img src="assets/icons/venn.png"> Venn Diagrams</div>
+  <div class="topic" onclick="openTopic('Logical Deduction')"><img src="assets/icons/logical.png"> Logical Deduction</div>
+</div>
+
+</div>
+</section>
+
+<!-- ================= VERBAL ================= -->
+<section id="verbal" class="py-20">
+<div class="max-w-7xl mx-auto px-6">
+
+<h2 class="section-title mb-10">
+  <img src="assets/verbal.png"> Verbal Ability
+</h2>
+
+<div class="topic-grid">
+  <div class="topic" onclick="openTopic('Reading Comprehension')"><img src="assets/icons/comp.png"> Reading Comprehension</div>
+  <div class="topic" onclick="openTopic('Error Spotting')"><img src="assets/icons/error.png"> Error Spotting</div>
+  <div class="topic" onclick="openTopic('Sentence Correction')"><img src="assets/icons/sentencecorrection.png"> Sentence Correction</div>
+  <div class="topic" onclick="openTopic('Fill in the Blanks')"><img src="assets/icons/fill.png"> Fill in the Blanks</div>
+  <div class="topic" onclick="openTopic('Sentence Completion')"><img src="assets/icons/completion.png"> Sentence Completion</div>
+  <div class="topic" onclick="openTopic('Para Jumbles')"><img src="assets/icons/jumbles.png"> Para Jumbles</div>
+  <div class="topic" onclick="openTopic('Synonyms')"><img src="assets/icons/synoms.png"> Synonyms</div>
+  <div class="topic" onclick="openTopic('Antonyms')"><img src="assets/icons/Antonym.png"> Antonyms</div>
+  <div class="topic" onclick="openTopic('One Word Substitution')"><img src="assets/icons/oneword.png"> One Word Substitution</div>
+  <div class="topic" onclick="openTopic('Idioms and Phrases')"><img src="assets/icons/idoms.png"> Idioms and Phrases</div>
+  <div class="topic" onclick="openTopic('Active Passive Voice')"><img src="assets/icons/active.png"> Active & Passive Voice</div>
+  <div class="topic" onclick="openTopic('Direct Indirect Speech')"><img src="assets/icons/indirect.png"> Direct & Indirect Speech</div>
+  <div class="topic" onclick="openTopic('Tenses')"><img src="assets/icons/tenses.png"> Tenses</div>
+  <div class="topic" onclick="openTopic('Articles')"><img src="assets/icons/article.png"> Articles</div>
+  <div class="topic" onclick="openTopic('Prepositions')"><img src="assets/icons/prepostion.png"> Prepositions</div>
+  <div class="topic" onclick="openTopic('Subject Verb Agreement')"><img src="assets/icons/subjectverb.png"> Subject–Verb Agreement</div>
+  <div class="topic" onclick="openTopic('Vocabulary')"><img src="assets/icons/vocab.png"> Vocabulary</div>
+  <div class="topic" onclick="openTopic('Spelling')"><img src="assets/icons/spelling.png"> Spelling</div>
+</div>
+
+</div>
+</section>
+
+<!-- ================= STYLES ================= -->
+<style>
+.section-title{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-size:30px;
+  font-weight:700;
+  color:#111827;
+}
+.section-title img{
+  width:34px;
+  height:34px;
+}
+.topic-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:18px;
+}
+.topic{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:18px;
+  min-height:72px;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  background:#ffffff;
+  font-size:15px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all 0.25s ease;
+}
+.topic img{
+  width:24px;
+  height:24px;
+  flex-shrink:0;
+}
+.topic:hover{
+  border-color:#34d399;
+  background:#f0fdf4;
+  color:#065f46;
+  box-shadow:0 6px 16px rgba(0,0,0,0.08);
+  transform:translateY(-2px);
+}
+</style>
+<script>
+/* ================= AUTH PROTECTION ================= */
+const token = localStorage.getItem("token");
+const role = localStorage.getItem("role");
+
+if (!token || role !== "candidate") {
+  window.location.href = "login.html";
+}
+
+/* ================= USER INFO ================= */
+const username = localStorage.getItem("username") || "Student";
+const userInitial = username.charAt(0).toUpperCase();
+
+/* ================= SHOW AVATAR ================= */
+const avatar = document.querySelector(".user-avatar");
+if (avatar) {
+  avatar.textContent = userInitial;
+  avatar.title = username;
+}
+
+/* ================= SEARCH ================= */
+function filterTopics() {
+  const q = document.getElementById("searchInput").value.toLowerCase();
+  document.querySelectorAll(".topic").forEach(t => {
+    t.style.display = t.innerText.toLowerCase().includes(q)
+      ? "flex"
+      : "none";
+  });
+}
+
+/* ================= NAVIGATION ================= */
+function openTopic(topic) {
+  window.location.href =
+    `question.html?topic=${encodeURIComponent(topic)}`;
+}
+
+/* ================= LOGOUT ================= */
+function logout() {
+  localStorage.clear();
+  window.location.href = "signup.html";
+}
+</script>
+
+
+</body>
+</html>

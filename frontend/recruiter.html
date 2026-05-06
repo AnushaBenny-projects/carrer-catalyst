@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<!-- Purpose: Renders the recruiter page for the Career Catalyst frontend. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recruiter Signup | Career Catalyst</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 flex justify-center items-center min-h-screen px-4 overflow-x-hidden">
+
+  <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl p-8 space-y-6 border border-gray-100">
+
+    <!-- Logo -->
+  <div class="flex justify-center mb-4">
+      <img src="./assets/CareerCatalyst.png"alt="Career Catalyst Logo" class="w-48 h-auto">
+    </div>
+
+    <h2 class="text-3xl font-bold text-center text-gray-800">Recruiter Signup</h2>
+    <p class="text-center text-gray-500 mb-6">Hire the best talent effortlessly 🚀</p>
+
+    <form class="space-y-4">
+      <!-- Company Name -->
+      <input type="text" placeholder="Company Name" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+
+      <!-- Email -->
+      <input type="email" placeholder="Company Email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+
+      <!-- Password -->
+      <input type="password" placeholder="Password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+
+      <!-- Company Website -->
+      <input type="url" placeholder="Company Website (https://example.com)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+
+      <!-- Company Logo -->
+      <label class="flex justify-between items-center border border-gray-300 rounded-lg p-2 cursor-pointer hover:bg-gray-50">
+        <span>Upload Company Logo</span>
+        <input type="file" class="hidden">
+      </label>
+
+      <button class="w-full bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-blue-600 hover:to-indigo-500 text-white font-semibold py-3 rounded-lg shadow-md transition">
+        Create Account
+      </button>
+    </form>
+
+    <p class="text-center text-sm text-gray-500">Already have an account? 
+      <a href="login.html" class="text-indigo-600 font-medium hover:underline">Login</a>
+    </p>
+
+  </div>
+  <script>
+  const form = document.querySelector("form");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const companyName = form.querySelector("input[placeholder='Company Name']").value;
+    const email = form.querySelector("input[placeholder='Company Email']").value;
+    const password = form.querySelector("input[placeholder='Password']").value;
+    const website = form.querySelector("input[placeholder^='Company Website']").value;
+
+    const res = await fetch("http://localhost:5000/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: companyName,
+        email,
+        password,
+        role: "recruiter",
+        website,
+      }),
+    });
+
+    const data = await res.json();
+    alert(data.message);
+  });
+</script>
+
+</body>
+</html>

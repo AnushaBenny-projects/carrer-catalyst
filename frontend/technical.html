@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<!-- Purpose: Renders the technical page for the Career Catalyst frontend. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Technical Subjects | Career Catalyst</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-white overflow-x-hidden">
+
+<section class="max-w-7xl mx-auto px-6 py-14">
+
+  <!-- Heading -->
+  <div class="mb-12 text-center">
+    <h1 class="text-4xl font-bold text-slate-900">Technical Subjects</h1>
+    <p class="text-slate-600 mt-2">
+      Learn theory, practice MCQs, and prepare for placements
+    </p>
+  </div>
+
+  <!-- Subjects Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+
+    <!-- Operating Systems -->
+    <div onclick="openSubject('os')" class="subject-card bg-blue-200">
+      <h3>Operating Systems</h3>
+      <p>Processes, Threads, CPU Scheduling, Deadlocks</p>
+      <span>View all →</span>
+    </div>
+
+    <!-- OOPs -->
+    <div onclick="openSubject('oops')" class="subject-card bg-purple-200">
+      <h3>OOPs</h3>
+      <p>Encapsulation, Inheritance, Polymorphism, Abstraction</p>
+      <span>View all →</span>
+    </div>
+
+    <!-- DBMS -->
+    <div onclick="openSubject('dbms')" class="subject-card bg-green-200">
+      <h3>DBMS</h3>
+      <p>Normalization, SQL, Transactions, Indexing</p>
+      <span>View all →</span>
+    </div>
+
+    <!-- Computer Networks -->
+    <div onclick="openSubject('cn')" class="subject-card bg-orange-200">
+      <h3>Computer Networks</h3>
+      <p>OSI Model, TCP/IP, Routing, Network Security</p>
+      <span>View all →</span>
+    </div>
+
+    <!-- Software Engineering -->
+    <div onclick="openSubject('se')" class="subject-card bg-red-200">
+      <h3>Software Engineering</h3>
+      <p>SDLC, Agile, Testing, Project Management</p>
+      <span>View all →</span>
+    </div>
+
+    <!-- DSA -->
+    <div onclick="openSubject('dsa')" class="subject-card bg-indigo-200">
+      <h3>Data Structures & Algorithms</h3>
+      <p>Arrays, Linked Lists, Trees, Graphs, DP</p>
+      <span>View all →</span>
+    </div>
+
+    <!-- C -->
+    <div onclick="openSubject('c')" class="subject-card bg-gray-200">
+      <h3>C Programming</h3>
+      <p>Pointers, Memory Management, Structures</p>
+      <span>View all →</span>
+    </div>
+
+    <!-- C++ -->
+    <div onclick="openSubject('cpp')" class="subject-card bg-blue-300">
+      <h3>C++</h3>
+      <p>OOPs, STL, Memory Management</p>
+      <span>View all →</span>
+    </div>
+
+    <!-- Java -->
+    <div onclick="openSubject('java')" class="subject-card bg-red-300">
+      <h3>Java</h3>
+      <p>OOPs, Collections, JVM, Multithreading</p>
+      <span>View all →</span>
+    </div>
+
+    <!-- Python -->
+    <div onclick="openSubject('python')" class="subject-card bg-yellow-200">
+      <h3>Python</h3>
+      <p>Syntax, OOPs, Libraries, Automation</p>
+      <span>View all →</span>
+    </div>
+
+    <!-- JavaScript -->
+    <div onclick="openSubject('javascript')" class="subject-card bg-yellow-300">
+      <h3>JavaScript</h3>
+      <p>ES6, DOM, Async/Await, Promises</p>
+      <span>View all →</span>
+    </div>
+
+    <!-- Web Technology -->
+    <div onclick="openSubject('web-tech')" class="subject-card bg-teal-200">
+      <h3>Web Technology</h3>
+      <p>HTML, CSS, JavaScript, HTTP, Browser, Responsive Design</p>
+      <span>View all →</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- Shared Card Styles -->
+<style>
+  .subject-card {
+    cursor: pointer;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+  }
+
+  .subject-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  }
+
+  .subject-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .subject-card p {
+    font-size: 0.9rem;
+    color: #334155;
+    margin-top: 0.5rem;
+  }
+
+  .subject-card span {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1d4ed8;
+    margin-top: 1rem;
+  }
+</style>
+
+<script>
+  function openSubject(subject) {
+    window.location.href = `subject.html?subject=${subject}`;
+  }
+</script>
+
+</body>
+</html>

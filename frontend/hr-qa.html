@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<!-- Purpose: Renders the hr-qa page for the Career Catalyst frontend. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Career Catalyst | HR / Behavioral Q/A</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white overflow-x-hidden">
+  <nav class="bg-white border-b shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-10">
+        <div class="flex items-center gap-3 cursor-pointer"
+             onclick="window.location.href='student-dashboard.html'">
+          <img src="./assets/CareerCatalyst.png" class="w-36 h-auto" />
+        </div>
+        <div class="hidden md:flex gap-8 text-slate-700 font-medium">
+          <a href="student-dashboard.html" class="hover:text-blue-600 transition">Home</a>
+          <a href="technical-hr-choice.html" class="hover:text-blue-600 transition">Q/A Tracks</a>
+        </div>
+      </div>
+      <div class="flex items-center gap-6">
+        <span id="navUser" class="text-slate-700 font-semibold text-sm md:text-base"></span>
+        <button id="logoutBtn"
+          class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition font-medium">
+          Logout
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="px-14 py-12">
+    <h1 class="text-4xl font-extrabold text-slate-900">HR / Behavioral Q/A</h1>
+    <p class="text-slate-600 text-lg mt-3 max-w-2xl">
+      Prepare for HR rounds, behavioral questions, and situational answers.
+    </p>
+  </div>
+
+  <div class="px-12 pb-16">
+    <div id="qaList" class="grid grid-cols-1 gap-6"></div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:5000/api";
+
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    const username = localStorage.getItem("username") || "User";
+
+    if (!token || role !== "candidate") {
+      window.location.href = "login.html";
+    }
+
+    document.getElementById("navUser").textContent = username;
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "role.html";
+    });
+
+    async function loadQa() {
+      const container = document.getElementById("qaList");
+      container.innerHTML = `<div class="text-slate-500 text-sm">Loading questions...</div>`;
+
+      try {
+        const res = await fetch(`${API_BASE}/qa/hr?count=150`);
+        if (!res.ok) {
+          let errText = "Failed to load questions.";
+          try {
+            const errData = await res.json();
+            errText = errData.message || errText;
+          } catch {}
+          throw new Error(errText);
+        }
+
+        const data = await res.json();
+        const items = data.items || [];
+
+        if (items.length === 0) {
+          container.innerHTML =
+            `<div class="text-slate-500 text-sm">No questions available.</div>`;
+          return;
+        }
+
+        container.innerHTML = items
+          .map(
+            (item, idx) => `
+              <div class="border rounded-2xl p-6 shadow-sm">
+                <h3 class="text-lg font-semibold text-slate-900">
+                  Q${idx + 1}. ${item.question}
+                </h3>
+                <p class="text-sm text-slate-700 mt-2 leading-relaxed">
+                  ${item.answer}
+                </p>
+              </div>
+            `
+          )
+          .join("");
+      } catch (err) {
+        container.innerHTML =
+          `<div class="text-red-500 text-sm">Failed to load questions: ${err.message || "Unknown error"}</div>`;
+      }
+    }
+
+    loadQa();
+  </script>
+</body>
+</html>

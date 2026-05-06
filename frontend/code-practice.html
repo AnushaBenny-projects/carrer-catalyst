@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<!-- Purpose: Renders the code-practice page for the Career Catalyst frontend. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Career Catalyst | Code Practice</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white overflow-x-hidden">
+  <nav class="bg-white border-b shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-10">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='student-dashboard.html'">
+          <img src="./assets/CareerCatalyst.png" class="w-36 h-auto" alt="Career Catalyst" />
+        </div>
+        <div class="hidden md:flex gap-8 text-slate-700 font-medium">
+          <a href="student-dashboard.html" class="hover:text-blue-600 transition">Home</a>
+          <a href="coding.html" class="text-blue-600">Practice</a>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <img id="navProfilePic" class="w-10 h-10 rounded-full object-cover border border-slate-200" alt="Profile">
+        <span id="navUser" class="text-slate-700 font-semibold text-sm md:text-base"></span>
+        <button id="logoutBtn" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition font-medium">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 md:px-10 py-8">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-900">Practice Coding</h1>
+        <p class="text-slate-600 mt-1">Write code and verify test cases for each DSA question.</p>
+      </div>
+      <a id="leetcodeLink" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex px-4 py-2 bg-amber-100 text-amber-800 rounded-lg font-semibold hover:bg-amber-200">Open in LeetCode</a>
+    </div>
+
+    <section class="bg-white border border-slate-200 rounded-2xl p-4 md:p-5 mb-6 shadow-sm">
+      <div class="grid md:grid-cols-4 gap-4">
+        <div class="md:col-span-2">
+          <label class="block text-xs text-slate-500 mb-1">Select Problem</label>
+          <select id="problemSelect" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></select>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-500 mb-1">Language</label>
+          <select id="languageSelect" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            <option value="javascript">JavaScript</option>
+            <option value="python">Python</option>
+            <option value="cpp">C++</option>
+            <option value="java">Java</option>
+          </select>
+        </div>
+        <div class="flex gap-2 items-end">
+          <button id="runBtn" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Run Tests</button>
+          <button id="resetBtn" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200">Reset</button>
+        </div>
+      </div>
+      <div class="mt-3 text-sm text-slate-600" id="problemMeta"></div>
+      <div class="mt-1 text-xs text-slate-500" id="languageHint"></div>
+    </section>
+
+    <section class="grid lg:grid-cols-2 gap-6">
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+        <h2 class="font-semibold text-slate-900 mb-2">Starter Code</h2>
+        <textarea id="codeInput" class="w-full h-[430px] border border-slate-300 rounded-lg px-3 py-2 font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+          <h2 class="font-semibold text-slate-900 mb-2">Default Test Cases</h2>
+          <div id="testPreview" class="text-sm text-slate-700 space-y-2"></div>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+          <h2 class="font-semibold text-slate-900 mb-2">Result</h2>
+          <div id="resultBox" class="text-sm text-slate-700">Run tests to view results.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    const username = localStorage.getItem("username") || "User";
+    const BACKEND_BASE = "http://localhost:5000";
+    if (!token || role !== "candidate") window.location.href = "login.html";
+
+    document.getElementById("navUser").textContent = username;
+    function fallbackAvatar(name) {
+      const initials = (name || "U")
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((p) => p[0].toUpperCase())
+        .join("");
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='100%' height='100%' fill='#dbeafe'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='30' fill='#1e3a8a'>${initials}</text></svg>`;
+      return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+    }
+    const profilePic = localStorage.getItem("profilePic") || "";
+    const profilePicUrl = localStorage.getItem("profilePicUrl") || "";
+    const computedProfileSrc = profilePicUrl || (profilePic ? `${BACKEND_BASE}/uploads/${profilePic}` : "");
+    const navProfilePic = document.getElementById("navProfilePic");
+    navProfilePic.src = computedProfileSrc || fallbackAvatar(username);
+    navProfilePic.onerror = () => { navProfilePic.src = fallbackAvatar(username); };
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "role.html";
+    });
+
+    const API_BASE = "http://localhost:5000/api";
+
+    const PRACTICE_BANK = {
+      "lc-9": { fn: "isPalindrome", tests: [{ input: [121], expected: true }, { input: [-121], expected: false }] },
+      "lc-13": { fn: "romanToInt", tests: [{ input: ["III"], expected: 3 }, { input: ["MCMXCIV"], expected: 1994 }] },
+      "lc-7": { fn: "reverse", tests: [{ input: [123], expected: 321 }, { input: [-123], expected: -321 }] },
+      "lc-50": { fn: "myPow", mode: "float", tests: [{ input: [2, 10], expected: 1024 }, { input: [2, -2], expected: 0.25 }] },
+      "lc-1": { fn: "twoSum", mode: "set1d", tests: [{ input: [[2,7,11,15],9], expected: [0,1] }, { input: [[3,2,4],6], expected: [1,2] }] },
+      "lc-26": { fn: "uniqueSorted", tests: [{ input: [[1,1,2]], expected: [1,2] }, { input: [[0,0,1,1,2,2,3]], expected: [0,1,2,3] }] },
+      "lc-53": { fn: "maxSubArray", tests: [{ input: [[-2,1,-3,4,-1,2,1,-5,4]], expected: 6 }, { input: [[1]], expected: 1 }] },
+      "lc-75": { fn: "sortColors", tests: [{ input: [[2,0,2,1,1,0]], expected: [0,0,1,1,2,2] }, { input: [[2,0,1]], expected: [0,1,2] }] },
+      "lc-121": { fn: "maxProfit", tests: [{ input: [[7,1,5,3,6,4]], expected: 5 }, { input: [[7,6,4,3,1]], expected: 0 }] },
+      "lc-15": { fn: "threeSum", mode: "set2d", tests: [{ input: [[-1,0,1,2,-1,-4]], expected: [[-1,-1,2],[-1,0,1]] }, { input: [[0,0,0]], expected: [[0,0,0]] }] },
+      "lc-704": { fn: "search", tests: [{ input: [[-1,0,3,5,9,12],9], expected: 4 }, { input: [[-1,0,3,5,9,12],2], expected: -1 }] },
+      "lc-33": { fn: "searchRotated", tests: [{ input: [[4,5,6,7,0,1,2],0], expected: 4 }, { input: [[4,5,6,7,0,1,2],3], expected: -1 }] },
+      "lc-153": { fn: "findMin", tests: [{ input: [[3,4,5,1,2]], expected: 1 }, { input: [[4,5,6,7,0,1,2]], expected: 0 }] },
+      "lc-875": { fn: "minEatingSpeed", tests: [{ input: [[3,6,7,11],8], expected: 4 }, { input: [[30,11,23,4,20],5], expected: 30 }] },
+      "lc-206": { fn: "reverseListArray", tests: [{ input: [[1,2,3,4,5]], expected: [5,4,3,2,1] }, { input: [[1,2]], expected: [2,1] }] },
+      "lc-141": { fn: "hasCycle", tests: [{ input: [[3,2,0,-4],1], expected: true }, { input: [[1,2],-1], expected: false }] },
+      "lc-19": { fn: "removeNthFromEndArray", tests: [{ input: [[1,2,3,4,5],2], expected: [1,2,3,5] }, { input: [[1],1], expected: [] }] },
+      "lc-142": { fn: "detectCycleStart", tests: [{ input: [[3,2,0,-4],1], expected: 1 }, { input: [[1,2],-1], expected: -1 }] },
+      "lc-20": { fn: "isValid", tests: [{ input: ["()[]{}"], expected: true }, { input: ["(]"], expected: false }] },
+      "lc-155": { fn: "minStackMin", tests: [{ input: [[-2,0,-3]], expected: -3 }, { input: [[1,2,3]], expected: 1 }] },
+      "lc-739": { fn: "dailyTemperatures", tests: [{ input: [[73,74,75,71,69,72,76,73]], expected: [1,1,4,2,1,1,0,0] }, { input: [[30,40,50,60]], expected: [1,1,1,0] }] },
+      "lc-232": { fn: "queueSimulation", tests: [{ input: [["push","push","peek","pop","empty"],[1,2,null,null,null]], expected: [null,null,1,1,false] }] },
+      "lc-94": { fn: "inorderTraversal", tests: [{ input: [[1,null,2,3]], expected: [1,3,2] }, { input: [[]], expected: [] }] },
+      "lc-102": { fn: "levelOrder", tests: [{ input: [[3,9,20,null,null,15,7]], expected: [[3],[9,20],[15,7]] }] },
+      "lc-104": { fn: "maxDepth", tests: [{ input: [[3,9,20,null,null,15,7]], expected: 3 }, { input: [[1,null,2]], expected: 2 }] },
+      "lc-98": { fn: "isValidBST", tests: [{ input: [[2,1,3]], expected: true }, { input: [[5,1,4,null,null,3,6]], expected: false }] },
+      "lc-236": { fn: "lowestCommonAncestor", tests: [{ input: [[3,5,1,6,2,0,8,null,null,7,4],5,1], expected: 3 }, { input: [[3,5,1,6,2,0,8,null,null,7,4],5,4], expected: 5 }] },
+      "lc-200": { fn: "numIslands", tests: [{ input: [[["1","1","1","1","0"],["1","1","0","1","0"],["1","1","0","0","0"],["0","0","0","0","0"]]], expected: 1 }] },
+      "lc-994": { fn: "orangesRotting", tests: [{ input: [[[2,1,1],[1,1,0],[0,1,1]]], expected: 4 }, { input: [[[2,1,1],[0,1,1],[1,0,1]]], expected: -1 }] },
+      "lc-207": { fn: "canFinish", tests: [{ input: [2,[[1,0]]], expected: true }, { input: [2,[[1,0],[0,1]]], expected: false }] },
+      "lc-1334": { fn: "findTheCity", tests: [{ input: [4,[[0,1,3],[1,2,1],[1,3,4],[2,3,1]],4], expected: 3 }] },
+      "lc-70": { fn: "climbStairs", tests: [{ input: [2], expected: 2 }, { input: [3], expected: 3 }] },
+      "lc-198": { fn: "rob", tests: [{ input: [[1,2,3,1]], expected: 4 }, { input: [[2,7,9,3,1]], expected: 12 }] },
+      "lc-322": { fn: "coinChange", tests: [{ input: [[1,2,5],11], expected: 3 }, { input: [[2],3], expected: -1 }] },
+      "lc-300": { fn: "lengthOfLIS", tests: [{ input: [[10,9,2,5,3,7,101,18]], expected: 4 }, { input: [[0,1,0,3,2,3]], expected: 4 }] },
+      "lc-1143": { fn: "longestCommonSubsequence", tests: [{ input: ["abcde","ace"], expected: 3 }, { input: ["abc","abc"], expected: 3 }] }
+    };
+
+    let allProblems = [];
+    let currentProblemId = "";
+    let currentLanguage = "javascript";
+
+    function jsonForCode(v) {
+      return JSON.stringify(v).replace(/</g, "\\u003c");
+    }
+
+    function getSelectedPractice() {
+      return PRACTICE_BANK[currentProblemId] || { fn: "solve", tests: [], mode: "exact" };
+    }
+
+    function renderPreview(practice) {
+      const box = document.getElementById("testPreview");
+      box.innerHTML = "";
+      if (!practice.tests.length) {
+        box.innerHTML = `<p class="text-slate-500">No local test cases configured for this problem yet.</p>`;
+        return;
+      }
+      practice.tests.forEach((t, idx) => {
+        const div = document.createElement("div");
+        div.className = "p-2 bg-slate-50 rounded border border-slate-200";
+        div.innerHTML = `<p><b>Test ${idx + 1}</b></p><p>Input: <code>${JSON.stringify(t.input)}</code></p><p>Expected: <code>${JSON.stringify(t.expected)}</code></p>`;
+        box.appendChild(div);
+      });
+    }
+
+    function jsTemplate(practice) {
+      return `function ${practice.fn}(...args) {\n  // Write your solution\n  return null;\n}\n\nconst tests = ${jsonForCode(practice.tests.map((t) => t.input))};\nconst expected = ${jsonForCode(practice.tests.map((t) => t.expected))};\nconst mode = ${JSON.stringify(practice.mode || "exact")};\n\nfunction normalize(val, mode) {\n  if (mode === "set1d" && Array.isArray(val)) return [...val].sort((a,b)=>a-b);\n  if (mode === "set2d" && Array.isArray(val)) return val.map(r=>Array.isArray(r)?[...r].sort((a,b)=>a-b):r).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)));\n  if (mode === "float" && typeof val === "number") return Number(val.toFixed(6));\n  return val;\n}\n\nfor (let i = 0; i < tests.length; i++) {\n  let actual;\n  let pass = false;\n  try {\n    actual = ${practice.fn}(...tests[i]);\n    pass = JSON.stringify(normalize(actual, mode)) === JSON.stringify(normalize(expected[i], mode));\n  } catch (e) {\n    actual = 'Runtime Error: ' + e.message;\n  }\n  console.log((pass ? 'PASS' : 'FAIL') + ' | test ' + (i + 1));\n  console.log('expected=' + JSON.stringify(expected[i]));\n  console.log('actual=' + JSON.stringify(actual));\n}`;
+    }
+
+    function pythonTemplate(practice) {
+      return `def ${practice.fn}(*args):\n    # Write your solution\n    return None\n\ntests = ${jsonForCode(practice.tests.map((t) => t.input))}\nexpected = ${jsonForCode(practice.tests.map((t) => t.expected))}\nmode = ${JSON.stringify(practice.mode || "exact")}\n\ndef normalize(val, mode):\n    if mode == "set1d" and isinstance(val, list):\n        return sorted(val)\n    if mode == "set2d" and isinstance(val, list):\n        rows = []\n        for r in val:\n            if isinstance(r, list):\n                rows.append(sorted(r))\n            else:\n                rows.append(r)\n        return sorted(rows, key=lambda x: str(x))\n    if mode == "float" and isinstance(val, float):\n        return round(val, 6)\n    return val\n\nfor i in range(len(tests)):\n    try:\n        actual = ${practice.fn}(*tests[i])\n        ok = normalize(actual, mode) == normalize(expected[i], mode)\n    except Exception as e:\n        actual = 'Runtime Error: ' + str(e)\n        ok = False\n    print(('PASS' if ok else 'FAIL') + ' | test ' + str(i + 1))\n    print('expected=' + str(expected[i]))\n    print('actual=' + str(actual))`;
+    }
+
+    function cppTemplate(practice) {
+      const tests = practice.tests.map((t) => JSON.stringify(t.input));
+      const expected = practice.tests.map((t) => JSON.stringify(t.expected));
+      const testsList = tests.map((s) => `R"JSON(${s})JSON"`).join(",\n    ");
+      const expectedList = expected.map((s) => `R"JSON(${s})JSON"`).join(",\n    ");
+
+      return `#include <bits/stdc++.h>\nusing namespace std;\n\nstring ${practice.fn}(const string& rawInput) {\n    // rawInput is JSON text for one test's input args\n    // Return output as JSON text to match expected format\n    return \"null\";\n}\n\nint main() {\n    vector<string> tests = {\n    ${testsList}\n    };\n    vector<string> expected = {\n    ${expectedList}\n    };\n\n    for (size_t i = 0; i < tests.size(); i++) {\n        string actual;\n        bool pass = false;\n        try {\n            actual = ${practice.fn}(tests[i]);\n            pass = (actual == expected[i]);\n        } catch (...) {\n            actual = \"Runtime Error\";\n        }\n        cout << (pass ? \"PASS\" : \"FAIL\") << \" | test \" << (i + 1) << "\\n";\n        cout << \"expected=\" << expected[i] << "\\n";\n        cout << \"actual=\" << actual << "\\n";\n    }\n    return 0;\n}`;
+    }
+
+    function javaTemplate(practice) {
+      const tests = practice.tests.map((t) => JSON.stringify(t.input));
+      const expected = practice.tests.map((t) => JSON.stringify(t.expected));
+      const testsArray = tests.map((s) => `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`).join(", ");
+      const expectedArray = expected.map((s) => `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`).join(", ");
+
+      return `import java.util.*;\n\npublic class Main {\n    static String ${practice.fn}(String rawInput) {\n        // rawInput is JSON text for one test's input args\n        // Return output as JSON text to match expected format\n        return \"null\";\n    }\n\n    public static void main(String[] args) {\n        String[] tests = new String[]{ ${testsArray} };\n        String[] expected = new String[]{ ${expectedArray} };\n\n        for (int i = 0; i < tests.length; i++) {\n            String actual;\n            boolean pass = false;\n            try {\n                actual = ${practice.fn}(tests[i]);\n                pass = actual.equals(expected[i]);\n            } catch (Exception e) {\n                actual = \"Runtime Error: \" + e.getMessage();\n            }\n            System.out.println((pass ? \"PASS\" : \"FAIL\") + \" | test \" + (i + 1));\n            System.out.println(\"expected=\" + expected[i]);\n            System.out.println(\"actual=\" + actual);\n        }\n    }\n}`;
+    }
+
+    function createStarterCode(practice, language) {
+      if (language === "javascript") return jsTemplate(practice);
+      if (language === "python") return pythonTemplate(practice);
+      if (language === "cpp") return cppTemplate(practice);
+      return javaTemplate(practice);
+    }
+
+    function updateProblemUI() {
+      const item = allProblems.find((p) => p.id === currentProblemId);
+      const practice = getSelectedPractice();
+      const problemMeta = document.getElementById("problemMeta");
+      const lc = document.getElementById("leetcodeLink");
+      const languageHint = document.getElementById("languageHint");
+
+      problemMeta.textContent = item
+        ? `${item.id} | ${item.title} | ${item.difficulty}`
+        : "Problem not found";
+
+      lc.href = item?.url || "#";
+      document.getElementById("codeInput").value = createStarterCode(practice, currentLanguage);
+      languageHint.textContent = currentLanguage === "javascript" || currentLanguage === "python"
+        ? "Auto test verification compares actual and expected values directly."
+        : "For C++/Java, return output as JSON text exactly matching expected value.";
+      renderPreview(practice);
+      document.getElementById("resultBox").textContent = "Run tests to view results.";
+    }
+
+    async function loadProblems() {
+      const res = await fetch(`${API_BASE}/coding/roadmap`);
+      if (!res.ok) throw new Error("Failed to load roadmap");
+      const data = await res.json();
+      allProblems = (data.sections || []).flatMap((s) => s.problems || []);
+
+      const select = document.getElementById("problemSelect");
+      select.innerHTML = "";
+      allProblems.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.id} - ${p.title}`;
+        select.appendChild(opt);
+      });
+
+      const params = new URLSearchParams(window.location.search);
+      currentProblemId = params.get("problemId") || allProblems[0]?.id || "";
+      if (currentProblemId) select.value = currentProblemId;
+      updateProblemUI();
+    }
+
+    async function runTests() {
+      const code = document.getElementById("codeInput").value;
+      const resultBox = document.getElementById("resultBox");
+      resultBox.innerHTML = `<p class="text-slate-600">Running...</p>`;
+
+      try {
+        const res = await fetch(`${API_BASE}/code/execute`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ language: currentLanguage, code })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          const details = [data.message, data.error, data.hint].filter(Boolean).join(" | ");
+          resultBox.innerHTML = `<p class="text-red-600">Execution failed: ${details || "Unknown error"}</p>`;
+          return;
+        }
+
+        const compileOut = [data.compile?.stdout, data.compile?.stderr, data.compile?.output]
+          .filter(Boolean)
+          .join("\n");
+        const runOut = [data.stdout, data.stderr, data.output]
+          .filter(Boolean)
+          .join("\n");
+
+        const safeCompile = compileOut ? compileOut.replace(/</g, "&lt;") : "";
+        const safeRun = runOut ? runOut.replace(/</g, "&lt;") : "";
+
+        resultBox.innerHTML = `
+          <div class="space-y-3">
+            ${safeCompile ? `<div><p class="font-semibold text-slate-800">Compile Output</p><pre class="bg-slate-50 border border-slate-200 rounded p-2 overflow-auto text-xs">${safeCompile}</pre></div>` : ""}
+            <div><p class="font-semibold text-slate-800">Run Output</p><pre class="bg-slate-50 border border-slate-200 rounded p-2 overflow-auto text-xs">${safeRun || "(no output)"}</pre></div>
+          </div>
+        `;
+      } catch (err) {
+        resultBox.innerHTML = `<p class="text-red-600">Execution error: ${err.message}</p>`;
+      }
+    }
+
+    document.getElementById("problemSelect").addEventListener("change", (e) => {
+      currentProblemId = e.target.value;
+      updateProblemUI();
+      const u = new URL(window.location.href);
+      u.searchParams.set("problemId", currentProblemId);
+      history.replaceState(null, "", u.toString());
+    });
+
+    document.getElementById("languageSelect").addEventListener("change", (e) => {
+      currentLanguage = e.target.value;
+      updateProblemUI();
+    });
+
+    document.getElementById("runBtn").addEventListener("click", runTests);
+    document.getElementById("resetBtn").addEventListener("click", updateProblemUI);
+
+    loadProblems().catch(() => {
+      document.getElementById("resultBox").innerHTML = `<p class="text-red-600">Failed to load problems. Make sure backend is running.</p>`;
+    });
+  </script>
+</body>
+</html>

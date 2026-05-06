@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<!-- Purpose: Renders the question page for the Career Catalyst frontend. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aptitude Practice</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 overflow-x-hidden">
+
+<!-- PAGE WRAPPER -->
+<div class="max-w-4xl mx-auto px-4 py-8">
+
+  <!-- TITLE -->
+  <h1 id="title" class="text-3xl font-bold text-gray-800 mb-6"></h1>
+
+  <!-- STATUS -->
+  <p id="status" class="text-gray-600 mb-6"></p>
+
+  <!-- QUESTIONS -->
+  <div id="questions" class="space-y-8"></div>
+
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const topic = params.get("topic");
+
+document.getElementById("title").innerText = topic || "Aptitude Practice";
+document.getElementById("status").innerText = "⏳ Loading questions...";
+
+fetch(`http://localhost:5000/api/aptitude/${encodeURIComponent(topic)}`)
+  .then(res => res.json())
+  .then(data => {
+    const container = document.getElementById("questions");
+    container.innerHTML = "";
+
+    document.getElementById("status").innerText =
+      `Showing ${data.questions.length} questions`;
+
+    data.questions.forEach((q, index) => {
+      const card = document.createElement("div");
+      card.className =
+        "bg-white border border-gray-200 rounded-lg p-6 shadow-sm";
+
+      // Track if already answered
+      let answered = false;
+
+      card.innerHTML = `
+        <div class="flex gap-3 mb-4">
+          <div class="font-bold text-emerald-600">${index + 1}.</div>
+          <div class="text-gray-800 font-medium">${q.question}</div>
+        </div>
+
+        <div class="space-y-3">
+          ${q.options.map((opt, i) => `
+            <button
+              class="option-btn flex items-center gap-3 w-full border rounded-md px-4 py-2 text-left hover:bg-gray-50"
+              data-option="${opt}">
+              <span class="w-8 h-8 flex items-center justify-center rounded-full border font-semibold">
+                ${String.fromCharCode(65 + i)}
+              </span>
+              <span>${opt}</span>
+            </button>
+          `).join("")}
+        </div>
+
+        <div class="explanation hidden mt-5 border-t pt-4">
+          <p class="font-semibold text-gray-700 mb-1">Explanation:</p>
+          <p class="text-gray-600">${q.explanation}</p>
+        </div>
+      `;
+
+      // Handle option click
+      card.querySelectorAll(".option-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          if (answered) return; // lock after first click
+          answered = true;
+
+          const selected = btn.dataset.option;
+          const correct = q.correct_answer;
+
+          card.querySelectorAll(".option-btn").forEach(b => {
+            b.classList.add("cursor-not-allowed");
+
+            if (b.dataset.option === correct) {
+              b.classList.add(
+                "bg-emerald-50",
+                "border-emerald-500",
+                "text-emerald-700"
+              );
+            }
+
+            if (b.dataset.option === selected &&
+                selected !== correct) {
+              b.classList.add(
+                "bg-red-50",
+                "border-red-500",
+                "text-red-700"
+              );
+            }
+          });
+
+          // Show explanation
+          card.querySelector(".explanation").classList.remove("hidden");
+        });
+      });
+
+      container.appendChild(card);
+    });
+  })
+  .catch(err => {
+    console.error(err);
+    document.getElementById("status").innerText =
+      "❌ Failed to load questions";
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<!-- Purpose: Renders the student-dashboard page for the Career Catalyst frontend. -->
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Career Catalyst - Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- GLAZING HOVER ANIMATION -->
+  <style>
+    .gloss-card {
+      position: relative;
+      overflow: hidden;
+      transition: 0.3s ease;
+    }
+
+    .gloss-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .gloss-card::after {
+      content: "";
+      position: absolute;
+      top: -100%;
+      left: -100%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        120deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.35) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: rotate(25deg);
+      transition: 0.6s ease-in-out;
+      opacity: 0;
+    }
+
+    .gloss-card:hover::after {
+      top: 100%;
+      left: 100%;
+      opacity: 1;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-up-delayed {
+      animation: slideUp 0.5s ease-out 0.3s backwards;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+
+  </style>
+</head>
+
+<body class="bg-white overflow-x-hidden">
+<!-- ================= NAVBAR ================= -->
+<nav class="bg-white border-b shadow-sm sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-4 flex items-center justify-between">
+
+    <!-- LEFT: LOGO + MENU -->
+    <div class="flex items-center gap-10">
+      <!-- LOGO -->
+      <div class="flex items-center gap-3 cursor-pointer"
+           onclick="window.location.href='student-dashboard.html'">
+        <img src="./assets/CareerCatalyst.png" class="w-36 h-auto" />
+      </div>
+
+      <!-- MENU -->
+      <div class="hidden md:flex gap-8 text-slate-700 font-medium">
+        <a href="student-dashboard.html"
+           class="hover:text-blue-600 transition">
+          Home
+        </a>
+
+        <a href="#"
+           class="hover:text-blue-600 transition">
+          Practice
+        </a>
+
+        <a href="#"
+           class="hover:text-blue-600 transition">
+          Jobs
+        </a>
+
+        <a href="#"
+           class="hover:text-blue-600 transition">
+          Search Jobs
+        </a>
+        <a href="resource-sharing.html"
+           class="hover:text-blue-600 transition">
+          Resources
+        </a>
+
+      </div>
+    </div>
+
+    <!-- RIGHT: USER + LOGOUT -->
+    <div class="flex items-center gap-3">
+      <img id="navProfilePic" class="w-10 h-10 rounded-full object-cover border border-slate-200" alt="Profile">
+      <span id="navUser" class="text-slate-700 font-semibold text-sm md:text-base"></span>
+
+      <!-- LOGOUT -->
+      <button id="logoutBtn"
+        class="bg-blue-600 text-white px-5 py-2 rounded-lg
+               hover:bg-blue-700 transition font-medium">
+        Logout
+      </button>
+    </div>
+
+  </div>
+</nav>
+
+
+
+  <!-- HERO SECTION -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 px-14 py-16 bg-white">
+
+    <!-- LEFT HERO CONTENT -->
+    <div class="flex flex-col justify-center">
+      <h1 class="text-5xl font-extrabold text-slate-900 leading-tight" id="welcomeUser">
+        Welcome, User
+      </h1>
+
+      <p class="text-slate-600 text-lg mt-4 leading-relaxed w-11/12">
+        Start your placement journey with curated modules designed to improve your
+        aptitude, technical knowledge, coding skills, interview preparation & overall confidence.
+      </p>
+
+      <div class="mt-8 border rounded-xl shadow-sm p-6 w-11/12 bg-white">
+        <h3 class="text-xl font-semibold text-slate-800">Get personalized preparation!</h3>
+        <p class="text-slate-600 text-sm mt-2">
+          Fill in your preferences to receive personalized recommendations.
+        </p>
+        <button id="completeProfileBtn" class="mt-4 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition">
+          Complete my profile
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT HERO IMAGE -->
+    <div class="flex justify-center lg:justify-end">
+      <img 
+        src="./assets/studentpreparing.png"
+        alt="Student preparing"
+        class="rounded-2xl shadow-xl w-full max-w-md object-cover"
+      />
+    </div>
+
+  </div>
+
+  <!-- SECTION 2: LEARNING PATH -->
+  <div class="px-12 py-14">
+
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h2 class="text-3xl font-bold text-slate-900">Pick Your Learning Path!</h2>
+        <p class="text-slate-600 text-sm mt-1">
+          Explore modules that best match your skills & interests.
+        </p>
+      </div>
+      <a href="#" class="text-blue-700 font-medium text-sm hover:underline">Explore all →</a>
+    </div>
+
+    <!-- 3 CARDS PER ROW WITH GLAZING -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+
+      <!-- APTITUDE CARD WITH ICON -->
+ <div class=" gloss-card rounded-2xl p-6 bg-blue-200 shadow cursor-pointer h-56 w-full 
+            flex items-center aptitude-card">
+
+  <!-- LEFT: ICON -->
+  <div class="w-20 h-20 flex items-center justify-center mr-5">
+    <img src="./assets/aptitude.png" 
+         alt="Aptitude Icon"
+         class="max-w-full max-h-full object-contain" />
+  </div>
+
+  <!-- RIGHT: TEXT CONTENT -->
+  <div>
+    <h3 class="text-2xl font-semibold text-slate-900">Aptitude</h3>
+
+    <p class="text-sm text-slate-700 mt-2 leading-relaxed">
+      Covers Quantitative Aptitude,  
+      Logical Reasoning,  
+      Verbal Ability,  
+      and complete placement preparation topics.
+    </p>
+  </div>
+
+</div>
+
+
+    <!-- TECHNICAL QUESTIONS -->
+<div class="gloss-card rounded-2xl p-6 bg-orange-200 shadow cursor-pointer h-56 w-full 
+            flex items-center">
+
+  <!-- LEFT: ICON -->
+  <div class="w-20 h-20 flex items-center justify-center mr-5">
+    <img src="./assets/technical.png" 
+         alt="Technical Icon"
+         class="max-w-full max-h-full object-contain" />
+  </div>
+
+  <!-- RIGHT: TEXT -->
+  <div>
+    <h3 class="text-2xl font-semibold text-slate-900">Technical Questions</h3>
+    <p class="text-sm text-slate-700 mt-2 leading-relaxed">
+      Includes DBMS, Operating Systems,  
+      Computer Networks, OOP Concepts,  
+      Software Engineering,  
+      and core CS fundamentals.
+    </p>
+  </div>
+
+</div>
+
+
+     <!-- CODING / DSA -->
+<div class="gloss-card coding-card rounded-2xl p-6 bg-purple-200 shadow cursor-pointer h-56 w-full 
+            flex items-center">
+
+  <!-- LEFT: ICON -->
+  <div class="w-20 h-20 flex items-center justify-center mr-5">
+    <img src="./assets/coding.png" 
+         alt="Coding Icon"
+         class="max-w-full max-h-full object-contain" />
+  </div>
+
+  <!-- RIGHT: TEXT -->
+  <div>
+    <h3 class="text-2xl font-semibold text-slate-900">Coding / DSA</h3>
+
+    <p class="text-sm text-slate-700 mt-2 leading-relaxed">
+      Practice Data Structures & Algorithms,  
+      solve coding challenges,  
+      improve problem-solving skills,  
+      and prepare for company coding rounds.
+    </p>
+  </div>
+
+</div>
+
+     <!-- TECHNICAL + HR Q/A -->
+<div class="gloss-card rounded-2xl p-6 bg-yellow-200 shadow cursor-pointer h-56 w-full 
+            flex items-center"
+     onclick="window.location.href='technical-hr-choice.html'">
+
+  <!-- LEFT: ICON -->
+  <div class="w-20 h-20 flex items-center justify-center mr-5">
+    <img src="./assets/interview.png" 
+         alt="Interview Icon"
+         class="max-w-full max-h-full object-contain" />
+  </div>
+
+  <!-- RIGHT: TEXT -->
+  <div>
+    <h3 class="text-2xl font-semibold text-slate-900">Technical + HR Q/A</h3>
+
+    <p class="text-sm text-slate-700 mt-2 leading-relaxed">
+      Prepare for company-specific technical questions,  
+      HR rounds, behavioral questions,  
+      situational answers, and communication skills.
+    </p>
+  </div>
+
+</div>
+
+
+      <!-- RESUME ANALYZER -->
+<div class="gloss-card resume-analyzer-card resume-card rounded-2xl p-6 bg-indigo-300 shadow cursor-pointer h-56 w-full 
+            flex items-center">
+
+  <!-- LEFT: ICON -->
+  <div class="w-20 h-20 flex items-center justify-center mr-5">
+    <img src="./assets/resumeAnalyser.png" 
+         alt="Resume Analyzer Icon"
+         class="max-w-full max-h-full object-contain" />
+  </div>
+
+  <!-- RIGHT: TEXT -->
+  <div>
+    <h3 class="text-2xl font-semibold text-slate-900">Resume Analyzer</h3>
+
+    <p class="text-sm text-slate-700 mt-2 leading-relaxed">
+      AI-based resume scoring,  
+      formatting analysis, skill matching,  
+      and improvement suggestions for top companies.
+    </p>
+  </div>
+
+</div>
+
+
+   <!-- CAREER ROADMAP -->
+<div class="gloss-card roadmap-card rounded-2xl p-6 bg-green-300 shadow cursor-pointer h-56 w-full 
+            flex items-center">
+
+  <!-- LEFT: ICON -->
+  <div class="w-20 h-20 flex items-center justify-center mr-5">
+    <img src="./assets/roadmap.png" 
+         alt="Career Roadmap Icon"
+         class="max-w-full max-h-full object-contain" />
+  </div>
+
+  <!-- RIGHT: TEXT -->
+  <div>
+    <h3 class="text-2xl font-semibold text-slate-900">Career Roadmap</h3>
+
+    <p class="text-sm text-slate-700 mt-2 leading-relaxed">
+      Step-by-step guidance for your chosen career path,  
+      skills to learn, resources to follow,  
+      and roadmap to secure your dream role.
+    </p>
+  </div>
+
+</div>
+<div class="px-12 pb-20">
+  <h2 class="text-3xl font-bold text-slate-900 mb-8">
+    Latest Job Openings
+  </h2>
+  <div id="jobsContainer" class="flex gap-4 items-start"></div>
+
+  <h2 class="text-3xl font-bold text-slate-900 mb-8 mt-12">
+    My Applied Jobs
+  </h2>
+  <div id="appliedJobsContainer" class="flex flex-col gap-4 items-start"></div>
+</div>
+
+<!-- COMPLETE PROFILE MODAL -->
+<div id="profileModal" class="hidden fixed inset-0 bg-black/40 z-[60] flex items-center justify-center p-4">
+  <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-bold text-slate-900">Complete Profile</h3>
+      <button id="closeProfileModalBtn" class="text-slate-500 hover:text-slate-700 text-xl leading-none">&times;</button>
+    </div>
+    <form id="profileForm" class="space-y-4" enctype="multipart/form-data">
+      <div class="grid md:grid-cols-2 gap-4">
+        <input id="profileName" name="name" type="text" placeholder="Full Name" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none" required>
+        <input id="profileEmail" name="email" type="email" placeholder="Email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none" required>
+        <input id="profileDob" name="dob" type="date" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+        <input id="profileCourse" name="course" type="text" placeholder="Course" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+      </div>
+      <input id="profileSkills" name="skills" type="text" placeholder="Skills (comma separated)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+      <div class="border border-gray-300 rounded-lg p-3">
+        <label for="profileResume" class="block text-sm font-medium text-slate-700 mb-2">Upload Resume (PDF/DOC)</label>
+        <input id="profileResume" name="resume" type="file" accept=".pdf,.doc,.docx" class="w-full text-sm text-slate-700 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer">
+        <p id="profileResumeFileName" class="text-xs text-slate-500 mt-2"></p>
+        <a id="profileResumeLink" href="#" target="_blank" class="hidden text-xs text-blue-600 hover:underline mt-1 inline-block">View Current Resume</a>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button type="button" id="cancelProfileBtn" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save Profile</button>
+      </div>
+    </form>
+    <p id="profileMsg" class="text-sm mt-3"></p>
+  </div>
+</div>
+
+<!-- APPLY MODAL -->
+<div id="applyModal" class="hidden fixed inset-0 bg-black/40 z-[70] flex items-center justify-center p-4">
+  <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 id="applyModalTitle" class="text-xl font-bold text-slate-900">Apply Job</h3>
+      <button id="closeApplyModalBtn" class="text-slate-500 hover:text-slate-700 text-xl leading-none">&times;</button>
+    </div>
+    <form id="applyForm" class="space-y-4" enctype="multipart/form-data">
+      <div id="applyFieldsContainer" class="space-y-3"></div>
+      <div class="border border-gray-300 rounded-lg p-3">
+        <label for="applyResumeFile" class="block text-sm font-medium text-slate-700 mb-2">Upload Resume for this application (optional)</label>
+        <input id="applyResumeFile" name="resume" type="file" accept=".pdf,.doc,.docx" class="w-full text-sm text-slate-700 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer">
+      </div>
+      <p id="applyResumeInfo" class="text-xs text-slate-600"></p>
+      <div class="flex justify-end gap-2">
+        <button type="button" id="cancelApplyBtn" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Submit Application</button>
+      </div>
+    </form>
+    <p id="applyMsg" class="text-sm mt-3"></p>
+  </div>
+</div>
+
+<!-- RESUME ANALYZER MODAL -->
+<div id="resumeModal"
+  class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[100] backdrop-blur-sm">
+  <div class="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 shadow-2xl overflow-y-auto max-h-[90vh] relative custom-scrollbar">
+    <button id="closeModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl">&times;</button>
+
+    <h2 class="text-3xl font-bold text-slate-800 mb-2 flex items-center gap-3">
+      <span class="bg-indigo-100 p-2 rounded-lg text-indigo-600">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </span>
+      Resume Analysis
+    </h2>
+    <p class="text-slate-600 mb-6 ml-1">Upload your resume to receive an AI-powered quality score and actionable feedback.</p>
+
+    <div id="uploadArea"
+      class="mb-8 p-8 border-2 border-dashed border-indigo-200 rounded-xl bg-indigo-50/50 text-center hover:bg-indigo-50 transition">
+      <input type="file" id="resumeInput" accept=".pdf" class="hidden">
+      <label for="resumeInput" id="uploadLabel" class="cursor-pointer block group">
+        <div class="mb-3 text-indigo-400 group-hover:scale-110 transition flex justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+        </div>
+        <span class="text-indigo-600 font-bold text-lg hover:underline">Select PDF File</span>
+        <p class="text-sm text-gray-500 mt-1">Supported format: PDF (Max 5MB)</p>
+      </label>
+      <div id="fileInfo" class="mt-4 hidden">
+        <span class="bg-white px-3 py-1 rounded-full border border-gray-200 text-sm font-medium text-slate-700 shadow-sm">
+          <span id="fileName">file.pdf</span>
+          <button id="clearFile" class="ml-2 text-red-500 hover:text-red-700">&times;</button>
+        </span>
+      </div>
+      <button id="analyzeBtn"
+        class="mt-6 bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 hidden flex items-center justify-center gap-2 mx-auto">
+        <span>Analyze Resume</span>
+      </button>
+    </div>
+
+    <div id="loadingState" class="hidden flex-col items-center justify-center py-12">
+      <div class="relative">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mb-4"></div>
+        <div class="absolute top-0 left-0 h-16 w-16 animate-ping rounded-full border-4 border-indigo-400 opacity-20"></div>
+      </div>
+      <p class="text-indigo-800 font-semibold text-lg animate-pulse">Analyzing your resume with AI...</p>
+      <p class="text-indigo-400 text-sm mt-1">Extracting skills, checking formatting, calculating score</p>
+    </div>
+
+    <div id="resultsSection" class="hidden space-y-8">
+      <div class="flex items-center gap-6 p-4 bg-slate-50 rounded-xl border border-slate-100">
+        <div class="relative w-28 h-28 flex-shrink-0">
+          <svg class="w-full h-full transform -rotate-90">
+            <circle cx="56" cy="56" r="48" stroke="#e2e8f0" stroke-width="8" fill="transparent"></circle>
+            <circle id="scoreCircle" cx="56" cy="56" r="48" stroke="#4f46e5" stroke-width="8" fill="transparent"
+              stroke-dasharray="301.59" stroke-dashoffset="301.59"
+              class="transition-all duration-1000 ease-out"></circle>
+          </svg>
+          <div class="absolute inset-0 flex items-center justify-center flex-col">
+            <span id="scoreValue" class="text-3xl font-extrabold text-indigo-700">0</span>
+            <span class="text-xs font-semibold text-gray-400">SCORE</span>
+          </div>
+        </div>
+        <div>
+          <h3 id="scoreTitle" class="text-2xl font-bold text-slate-800 mb-1">Analysis Complete</h3>
+          <p id="scoreText" class="text-slate-600 leading-relaxed">
+            Check the detailed feedback below to improve your score.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+          <h4 class="font-bold text-slate-700 mb-3">Detected Skills</h4>
+          <div id="skillsList" class="flex flex-wrap gap-2 max-h-40 overflow-y-auto custom-scrollbar"></div>
+        </div>
+        <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
+          <h4 class="font-bold text-slate-700 mb-3">Suggestions</h4>
+          <div class="max-h-40 overflow-y-auto custom-scrollbar">
+            <ul id="feedbackList" class="space-y-2"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center pt-2">
+        <button id="tryAgainBtn" class="text-indigo-600 font-semibold hover:text-indigo-800 hover:underline">
+          Analyze Another Resume
+        </button>
+      </div>
+
+      <div id="jobRecommendations" class="hidden mt-8 border-t border-slate-100 pt-6 slide-up-delayed">
+        <h3 class="text-xl font-bold text-slate-800 mb-4">
+          Recommended Jobs for You
+        </h3>
+        <div id="jobsList" class="grid grid-cols-1 gap-3"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const { protocol, hostname, origin } = window.location;
+  const isLocal = hostname === "127.0.0.1" || hostname === "localhost";
+  const isFile = protocol === "file:";
+  const BACKEND_BASE = isFile
+    ? "http://localhost:5000"
+    : (isLocal ? `${protocol}//localhost:5000` : `${origin}`);
+  const API_BASE = `${BACKEND_BASE}/api`;
+
+  // ================= USER NAME =================
+  const username = localStorage.getItem("username") || "User";
+  document.getElementById("welcomeUser").textContent = `Welcome, ${username}`;
+  document.getElementById("navUser").textContent = username;
+
+  function escapeHtml(value = "") {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function fallbackAvatar(name) {
+    const initials = (name || "U")
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0].toUpperCase())
+      .join("");
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='100%' height='100%' fill='#dbeafe'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='30' fill='#1e3a8a'>${initials}</text></svg>`;
+    return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  }
+
+  const profilePic = localStorage.getItem("profilePic") || "";
+  const profilePicUrl = localStorage.getItem("profilePicUrl") || "";
+  const computedProfileSrc = profilePicUrl || (profilePic ? `${BACKEND_BASE}/uploads/${profilePic}` : "");
+  const navProfilePic = document.getElementById("navProfilePic");
+  navProfilePic.src = computedProfileSrc || fallbackAvatar(username);
+  navProfilePic.onerror = () => {
+    navProfilePic.src = fallbackAvatar(username);
+  };
+
+  // ================= AUTH GUARD =================
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+
+  if (!token || role !== "candidate") {
+    window.location.href = "login.html";
+  }
+
+  // ================= LOGOUT =================
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    localStorage.clear();
+    window.location.href = "role.html";
+  });
+
+  // ================= CARD REDIRECTS =================
+  document.querySelector(".aptitude-card").addEventListener("click", () => {
+    window.location.href = "apitude.html";
+  });
+
+  document.querySelectorAll(".gloss-card")[1].addEventListener("click", () => {
+    window.location.href = "technical.html";
+  });
+
+  document.querySelector(".coding-card").addEventListener("click", () => {
+    const learnerId = localStorage.getItem("userEmail") || localStorage.getItem("username") || "";
+    const target = learnerId
+      ? `coding.html?learnerId=${encodeURIComponent(learnerId)}`
+      : "coding.html";
+    window.location.href = target;
+  });
+
+  document.querySelector(".roadmap-card").addEventListener("click", () => {
+    window.location.href = "career-roadmap.html";
+  });
+
+  // ================= RESUME ANALYZER =================
+  const RESUME_API = "http://localhost:5002/analyze_resume";
+  const JOBS_API = "http://localhost:5002/api/jobs/recommend";
+
+  const resumeModal = document.getElementById("resumeModal");
+  const resumeCard = document.querySelector(".resume-card");
+  const closeModalBtn = document.getElementById("closeModal");
+  const resumeInput = document.getElementById("resumeInput");
+  const fileNameEl = document.getElementById("fileName");
+  const fileInfo = document.getElementById("fileInfo");
+  const clearFileBtn = document.getElementById("clearFile");
+  const analyzeBtn = document.getElementById("analyzeBtn");
+  const uploadArea = document.getElementById("uploadArea");
+  const uploadLabel = document.getElementById("uploadLabel");
+  const loadingState = document.getElementById("loadingState");
+  const resultsSection = document.getElementById("resultsSection");
+  const tryAgainBtn = document.getElementById("tryAgainBtn");
+
+  resumeCard?.addEventListener("click", () => {
+    resumeModal.classList.remove("hidden");
+    resumeModal.classList.add("flex");
+    document.body.style.overflow = "hidden";
+  });
+
+  function closeResumeModal() {
+    resumeModal.classList.add("hidden");
+    resumeModal.classList.remove("flex");
+    document.body.style.overflow = "auto";
+    resetModal();
+  }
+
+  closeModalBtn?.addEventListener("click", closeResumeModal);
+  resumeModal?.addEventListener("click", (e) => { if (e.target === resumeModal) closeResumeModal(); });
+
+  resumeInput?.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) handleFileSelect(file);
+  });
+
+  function handleFileSelect(file) {
+    if (file.type !== "application/pdf") { alert("Please upload a PDF file."); return; }
+    if (file.size > 5 * 1024 * 1024) { alert("File is too large. Maximum size is 5MB."); resumeInput.value = ""; return; }
+
+    fileNameEl.textContent = file.name;
+    fileInfo.classList.remove("hidden");
+    uploadLabel.classList.add("hidden");
+    analyzeBtn.classList.remove("hidden");
+    analyzeBtn.disabled = false;
+  }
+
+  clearFileBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    resumeInput.value = "";
+    fileInfo.classList.add("hidden");
+    uploadLabel.classList.remove("hidden");
+    analyzeBtn.classList.add("hidden");
+    resultsSection.classList.add("hidden");
+  });
+
+  tryAgainBtn?.addEventListener("click", resetModal);
+
+  function showLoading() {
+    uploadArea.classList.add("hidden");
+    loadingState.classList.remove("hidden");
+    loadingState.classList.add("flex");
+  }
+
+  function hideLoading() {
+    loadingState.classList.remove("flex");
+    loadingState.classList.add("hidden");
+  }
+
+  function resetModal() {
+    resumeInput.value = "";
+    fileInfo.classList.add("hidden");
+    uploadLabel.classList.remove("hidden");
+    analyzeBtn.classList.add("hidden");
+    analyzeBtn.disabled = false;
+    resultsSection.classList.add("hidden");
+    hideLoading();
+    uploadArea.classList.remove("hidden");
+    document.getElementById("jobRecommendations").classList.add("hidden");
+    const circumference = 2 * Math.PI * 48;
+    document.getElementById("scoreCircle").style.strokeDashoffset = circumference;
+    document.getElementById("scoreCircle").style.stroke = "#4f46e5";
+    document.getElementById("scoreValue").textContent = "0";
+    document.getElementById("scoreTitle").textContent = "Analysis Complete";
+    document.getElementById("scoreTitle").className = "text-2xl font-bold text-slate-800 mb-1";
+  }
+
+  analyzeBtn?.addEventListener("click", async () => {
+    const file = resumeInput.files[0];
+    if (!file) return;
+
+    showLoading();
+    analyzeBtn.disabled = true;
+
+    const formData = new FormData();
+    formData.append("resume", file);
+
+    try {
+      const response = await fetch(RESUME_API, { method: "POST", body: formData });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || `Server returned ${response.status}`);
+      }
+      const data = await response.json();
+      displayResults(data);
+    } catch (error) {
+      alert("Error analyzing resume: " + (error.message || "Failed to fetch") + ". Ensure Python service is running on port 5002 and restart it after CORS changes.");
+      hideLoading();
+      uploadArea.classList.remove("hidden");
+      analyzeBtn.disabled = false;
+    }
+  });
+
+  function displayResults(data) {
+    hideLoading();
+    resultsSection.classList.remove("hidden");
+
+    const score = Math.round(data.score || 0);
+    const circumference = 2 * Math.PI * 48;
+    const offset = circumference - (score / 100) * circumference;
+    const scoreCircle = document.getElementById("scoreCircle");
+    const scoreValue = document.getElementById("scoreValue");
+    const scoreTitle = document.getElementById("scoreTitle");
+
+    scoreValue.textContent = 0;
+    let cur = 0;
+    const iv = setInterval(() => {
+      cur++;
+      scoreValue.textContent = cur;
+      if (cur >= score) clearInterval(iv);
+    }, 20);
+
+    setTimeout(() => {
+      scoreCircle.style.strokeDashoffset = offset;
+      if (score >= 80) {
+        scoreCircle.style.stroke = "#10b981";
+        scoreTitle.textContent = "Excellent!";
+        scoreTitle.className = "text-2xl font-bold text-emerald-600 mb-1";
+      } else if (score >= 50) {
+        scoreCircle.style.stroke = "#f59e0b";
+        scoreTitle.textContent = "Good Potential";
+        scoreTitle.className = "text-2xl font-bold text-amber-600 mb-1";
+      } else {
+        scoreCircle.style.stroke = "#ef4444";
+        scoreTitle.textContent = "Needs Improvement";
+        scoreTitle.className = "text-2xl font-bold text-red-600 mb-1";
+      }
+    }, 100);
+
+    const skillsContainer = document.getElementById("skillsList");
+    skillsContainer.innerHTML = "";
+    if (data.skills?.length > 0) {
+      data.skills.forEach((skill) => {
+        const span = document.createElement("span");
+        span.className = "bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-sm font-medium border border-blue-100";
+        span.textContent = skill;
+        skillsContainer.appendChild(span);
+      });
+    } else {
+      skillsContainer.innerHTML = '<span class="text-gray-500 text-sm">No specific skills detected.</span>';
+    }
+
+    const feedbackContainer = document.getElementById("feedbackList");
+    feedbackContainer.innerHTML = "";
+    if (data.feedback?.length > 0) {
+      data.feedback.forEach((item) => {
+        const li = document.createElement("li");
+        li.className = "flex items-start gap-2 text-sm text-slate-700 bg-amber-50 p-2 rounded";
+        li.textContent = item;
+        feedbackContainer.appendChild(li);
+      });
+    } else {
+      feedbackContainer.innerHTML = '<li class="text-emerald-600">Great job! Your resume looks well-structured.</li>';
+    }
+
+    if (data.skills?.length > 0) fetchJobRecommendations(data.skills);
+  }
+
+  async function fetchJobRecommendations(skills) {
+    const recSection = document.getElementById("jobRecommendations");
+    const jobsContainer = document.getElementById("jobsList");
+
+    try {
+      const res = await fetch(JOBS_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skills }),
+      });
+      if (!res.ok) return;
+
+      const jobs = await res.json();
+      jobsContainer.innerHTML = "";
+
+      if (jobs.length > 0) {
+        recSection.classList.remove("hidden");
+        jobs.forEach((job) => {
+          const div = document.createElement("div");
+          div.className = "bg-white p-4 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition";
+          div.innerHTML = `
+            <h4 class="font-bold text-slate-800">${escapeHtml(job.title || "")}</h4>
+            <p class="text-sm text-slate-500 mt-1">${escapeHtml(job.location || "")} - ${escapeHtml(job.type || "")}</p>`;
+          jobsContainer.appendChild(div);
+        });
+      } else {
+        recSection.classList.add("hidden");
+      }
+    } catch (e) {
+      console.error("Failed to load job recommendations:", e);
+    }
+  }
+
+  // ================= COMPLETE PROFILE =================
+  const profileModal = document.getElementById("profileModal");
+  const profileForm = document.getElementById("profileForm");
+  const profileMsg = document.getElementById("profileMsg");
+  const profileResume = document.getElementById("profileResume");
+  const profileResumeFileName = document.getElementById("profileResumeFileName");
+  const profileResumeLink = document.getElementById("profileResumeLink");
+  const applyModal = document.getElementById("applyModal");
+  const applyForm = document.getElementById("applyForm");
+  const applyFieldsContainer = document.getElementById("applyFieldsContainer");
+  const applyMsg = document.getElementById("applyMsg");
+  const applyResumeInfo = document.getElementById("applyResumeInfo");
+  const applyResumeFile = document.getElementById("applyResumeFile");
+  const applySubmitBtn = applyForm.querySelector("button[type='submit']");
+  let latestJobs = [];
+  let appliedJobIds = new Set();
+  let selectedApplyJob = null;
+
+  function openProfileModal() {
+    profileModal.classList.remove("hidden");
+  }
+  function closeProfileModal() {
+    profileModal.classList.add("hidden");
+    profileMsg.textContent = "";
+  }
+
+  async function loadProfile() {
+    try {
+      const res = await fetch(`${API_BASE}/auth/profile/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const user = data.user || {};
+      document.getElementById("profileName").value = user.name || "";
+      document.getElementById("profileEmail").value = user.email || "";
+      document.getElementById("profileDob").value = user.dob ? String(user.dob).slice(0, 10) : "";
+      document.getElementById("profileCourse").value = user.course || "";
+      document.getElementById("profileSkills").value = (user.skills || []).join(", ");
+      profileResumeFileName.textContent = user.resume ? `Current Resume: ${user.resume}` : "";
+      if (user.resumeUrl) {
+        profileResumeLink.href = user.resumeUrl;
+        profileResumeLink.classList.remove("hidden");
+      } else {
+        profileResumeLink.classList.add("hidden");
+      }
+    } catch (_) {}
+  }
+
+  document.getElementById("completeProfileBtn").addEventListener("click", async () => {
+    await loadProfile();
+    openProfileModal();
+  });
+  document.getElementById("closeProfileModalBtn").addEventListener("click", closeProfileModal);
+  document.getElementById("cancelProfileBtn").addEventListener("click", closeProfileModal);
+  profileResume.addEventListener("change", () => {
+    profileResumeFileName.textContent = profileResume.files[0] ? `Selected: ${profileResume.files[0].name}` : "";
+  });
+
+  profileForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    profileMsg.className = "text-sm mt-3 text-slate-600";
+    profileMsg.textContent = "Saving...";
+
+    const formData = new FormData(profileForm);
+    try {
+      const res = await fetch(`${API_BASE}/auth/profile/me`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        profileMsg.className = "text-sm mt-3 text-red-600";
+        profileMsg.textContent = data.message || "Failed to save profile";
+        return;
+      }
+
+      const user = data.user || {};
+      localStorage.setItem("username", user.name || "");
+      localStorage.setItem("userEmail", user.email || "");
+      localStorage.setItem("dob", user.dob || "");
+      localStorage.setItem("course", user.course || "");
+      localStorage.setItem("profilePic", user.profilePic || "");
+      localStorage.setItem("profilePicUrl", user.profilePicUrl || "");
+      localStorage.setItem("resume", user.resume || "");
+      localStorage.setItem("resumeUrl", user.resumeUrl || "");
+      profileResumeFileName.textContent = user.resume ? `Current Resume: ${user.resume}` : "";
+      if (user.resumeUrl) {
+        profileResumeLink.href = user.resumeUrl;
+        profileResumeLink.classList.remove("hidden");
+      } else {
+        profileResumeLink.classList.add("hidden");
+      }
+
+      document.getElementById("welcomeUser").textContent = `Welcome, ${user.name || "User"}`;
+      document.getElementById("navUser").textContent = user.name || "User";
+      navProfilePic.src = (user.profilePicUrl || (user.profilePic ? `${BACKEND_BASE}/uploads/${user.profilePic}` : "")) || fallbackAvatar(user.name || "User");
+
+      profileMsg.className = "text-sm mt-3 text-green-600";
+      profileMsg.textContent = "Profile updated successfully";
+      setTimeout(closeProfileModal, 800);
+    } catch (_) {
+      profileMsg.className = "text-sm mt-3 text-red-600";
+      profileMsg.textContent = "Failed to save profile";
+    }
+  });
+
+  document.getElementById("closeApplyModalBtn").addEventListener("click", closeApplyModal);
+  document.getElementById("cancelApplyBtn").addEventListener("click", closeApplyModal);
+
+  applyForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!selectedApplyJob) return;
+    const resumeUrl = localStorage.getItem("resumeUrl") || "";
+    const profileResumeFile = localStorage.getItem("resume") || "";
+    const selectedResume = applyResumeFile.files && applyResumeFile.files[0];
+    if (!resumeUrl && !profileResumeFile && !selectedResume) {
+      applyMsg.className = "text-sm mt-3 text-red-600";
+      applyMsg.textContent = "Upload resume in Complete Profile or choose one here before applying.";
+      return;
+    }
+
+    const answers = {};
+    let invalid = false;
+    applyFieldsContainer.querySelectorAll("[data-field-key]").forEach((el) => {
+      const key = el.dataset.fieldKey;
+      const value = (el.value || "").trim();
+      if (el.dataset.required === "1" && !value) invalid = true;
+      answers[key] = value;
+    });
+
+    if (invalid) {
+      applyMsg.className = "text-sm mt-3 text-red-600";
+      applyMsg.textContent = "Please fill all required fields.";
+      return;
+    }
+
+    applyMsg.className = "text-sm mt-3 text-slate-600";
+    applyMsg.textContent = "Submitting application...";
+    const ok = await applyJob(selectedApplyJob._id, answers, selectedResume);
+    if (ok) {
+      applyMsg.className = "text-sm mt-3 text-green-600";
+      applyMsg.textContent = "Application submitted.";
+      setTimeout(closeApplyModal, 700);
+    } else {
+      applyMsg.className = "text-sm mt-3 text-red-600";
+      applyMsg.textContent = "Application failed.";
+    }
+  });
+
+  document.getElementById("jobsContainer").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action='apply-job']");
+    if (!btn) return;
+    const jobId = btn.getAttribute("data-job-id");
+    if (!jobId) return;
+    openApplyModal(jobId);
+  });
+
+
+  // ================= LOAD JOBS =================
+  function renderLatestJobs() {
+    const container = document.getElementById("jobsContainer");
+    container.innerHTML = "";
+
+    const visibleJobs = latestJobs.filter((job) => !appliedJobIds.has(String(job._id)));
+    if (!visibleJobs.length) {
+      container.innerHTML = `<div class="text-slate-500 text-sm">No job openings available.</div>`;
+      return;
+    }
+
+    visibleJobs.forEach((job) => {
+      container.innerHTML += renderJob(job);
+    });
+  }
+
+  async function loadJobs() {
+    try {
+      const res = await fetch(`${API_BASE}/jobs/public`);
+      if (!res.ok) throw new Error("Failed");
+
+      const jobs = await res.json();
+      latestJobs = jobs;
+      await loadAppliedJobs();
+      renderLatestJobs();
+
+    } catch (err) {
+      document.getElementById("jobsContainer").innerHTML =
+        `<div class="text-red-500 text-sm">Failed to load jobs.</div>`;
+    }
+  }
+
+  // ================= APPLY JOB =================
+  async function applyJob(jobId, answers = {}, resumeFile = null) {
+    try {
+      const makePayload = () => {
+        const payload = new FormData();
+        payload.append("jobId", jobId);
+        payload.append("answers", JSON.stringify(answers || {}));
+        if (resumeFile) payload.append("resume", resumeFile);
+        return payload;
+      };
+
+      const apiCandidates = Array.from(
+        new Set([
+          API_BASE,
+          `${window.location.origin}/api`,
+          `${window.location.protocol}//${window.location.hostname}:5000/api`,
+          "http://localhost:5000/api",
+          "http://127.0.0.1:5000/api"
+        ].filter(Boolean))
+      );
+
+      let res = null;
+      let lastNetworkError = null;
+      for (const base of apiCandidates) {
+        try {
+          res = await fetch(`${base}/applications`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`
+            },
+            body: makePayload()
+          });
+          break;
+        } catch (networkErr) {
+          lastNetworkError = networkErr;
+        }
+      }
+
+      if (!res) throw lastNetworkError || new Error("Failed to fetch");
+
+      if (!res.ok) {
+        const raw = await res.text();
+        let data = {};
+        try {
+          data = raw ? JSON.parse(raw) : {};
+        } catch {
+          data = { message: raw || "" };
+        }
+        alert(data.message || `Application failed (HTTP ${res.status})`);
+        return false;
+      }
+
+      alert("Application submitted successfully");
+      await loadAppliedJobs();
+      renderLatestJobs();
+      return true;
+
+    } catch (err) {
+      console.error("Apply request failed:", err);
+      alert(err?.message ? `Unable to connect: ${err.message}` : "Unable to connect to server while applying");
+      return false;
+    }
+  }
+
+  function openApplyModal(jobId) {
+    selectedApplyJob = latestJobs.find((j) => j._id === jobId);
+    if (!selectedApplyJob) return;
+
+    const resumeUrl = localStorage.getItem("resumeUrl") || "";
+    const profileResumeFile = localStorage.getItem("resume") || "";
+    const hasResume = Boolean(resumeUrl || profileResumeFile);
+
+    document.getElementById("applyModalTitle").textContent = `Apply: ${selectedApplyJob.title}`;
+    applyFieldsContainer.innerHTML = "";
+    applyMsg.textContent = "";
+    applyMsg.className = "text-sm mt-3";
+
+    const fields = Array.isArray(selectedApplyJob.applicationForm) ? selectedApplyJob.applicationForm : [];
+    if (!fields.length) {
+      applyFieldsContainer.innerHTML = `<p class="text-sm text-slate-600">No additional form fields required for this job.</p>`;
+    } else {
+      fields.forEach((field, index) => {
+        const normalizedKey = String(field.key || "").toLowerCase();
+        const normalizedLabel = String(field.label || "").toLowerCase();
+        if (normalizedKey.includes("resume") || normalizedLabel.includes("resume")) return;
+        const fieldKey = String(field.key || field.label || `field_${index + 1}`)
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "_");
+
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = `<label class="block text-sm font-medium text-slate-700 mb-1">${field.label}${field.required ? " *" : ""}</label>`;
+        let inputEl;
+        if (field.type === "textarea") {
+          inputEl = document.createElement("textarea");
+          inputEl.rows = 3;
+          inputEl.className = "w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none";
+        } else if (field.type === "select" && Array.isArray(field.options) && field.options.length) {
+          inputEl = document.createElement("select");
+          inputEl.className = "w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none";
+          const placeholder = document.createElement("option");
+          placeholder.value = "";
+          placeholder.textContent = "Select option";
+          inputEl.appendChild(placeholder);
+          (field.options || []).forEach((opt) => {
+            const option = document.createElement("option");
+            option.value = opt;
+            option.textContent = opt;
+            inputEl.appendChild(option);
+          });
+        } else {
+          inputEl = document.createElement("input");
+          inputEl.type = field.type === "number" ? "number" : field.type === "date" ? "date" : "text";
+          inputEl.className = "w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none";
+        }
+        inputEl.dataset.fieldKey = fieldKey;
+        inputEl.dataset.required = field.required ? "1" : "";
+        wrapper.appendChild(inputEl);
+        applyFieldsContainer.appendChild(wrapper);
+      });
+    }
+
+    applyResumeInfo.textContent = hasResume
+      ? (resumeUrl ? `Profile resume ready: ${resumeUrl}` : `Profile resume ready: ${profileResumeFile}`)
+      : "No profile resume found. Upload one below to apply.";
+    applyResumeFile.value = "";
+    applySubmitBtn.disabled = false;
+    applySubmitBtn.classList.remove("opacity-60", "cursor-not-allowed");
+    applyModal.classList.remove("hidden");
+  }
+
+  function closeApplyModal() {
+    applyModal.classList.add("hidden");
+  }
+
+  async function loadAppliedJobs() {
+    const container = document.getElementById("appliedJobsContainer");
+    container.innerHTML = `<div class="text-slate-500 text-sm">Loading applied jobs...</div>`;
+
+    try {
+      const res = await fetch(`${API_BASE}/applications/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error();
+      const apps = await res.json();
+      appliedJobIds = new Set(
+        apps
+          .map((app) => {
+            if (app?.jobId && typeof app.jobId === "object") return String(app.jobId._id || "");
+            return String(app?.jobId || "");
+          })
+          .filter(Boolean)
+      );
+      if (!apps.length) {
+        container.innerHTML = `<div class="text-slate-500 text-sm">You have not applied to any jobs yet.</div>`;
+        renderLatestJobs();
+        return;
+      }
+
+      const cards = apps.map((app) => {
+        const fallbackResumeUrl = localStorage.getItem("resumeUrl") || "";
+        const resumeUrl = app.candidateResumeUrl || fallbackResumeUrl;
+        const status = app.status || "Pending";
+        const normalizedStatus = String(status).toLowerCase();
+        const statusClass = normalizedStatus === "rejected"
+          ? "bg-red-100 text-red-700"
+          : normalizedStatus === "accepted"
+            ? "bg-green-100 text-green-700"
+            : "bg-blue-100 text-blue-700";
+        return `
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm
+                      flex flex-col gap-3
+                      hover:shadow-md transition min-h-[220px] w-full sm:w-[320px] flex-none">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900">${app.jobTitle || "Job"}</h3>
+                <p class="text-sm text-slate-600">${app.companyName || "Company"}</p>
+              </div>
+              <span class="px-3 py-1 text-xs rounded-full font-medium ${statusClass}">
+                ${status}
+              </span>
+            </div>
+            <div class="flex flex-wrap gap-4 text-sm text-slate-600">
+              <div>${app.jobLocation || "Location N/A"}</div>
+              <div>${app.jobType || "Type N/A"}</div>
+            </div>
+            <p class="text-sm text-slate-700 leading-relaxed">
+              Applied on ${new Date(app.createdAt).toLocaleDateString()}
+            </p>
+            ${app.recruiterMessage
+              ? `<div class="text-xs text-slate-700 bg-slate-100 rounded-md p-2"><b>Message from recruiter:</b> ${escapeHtml(app.recruiterMessage)}</div>`
+              : ""}
+            <div class="pt-2">
+              ${resumeUrl
+                ? `<a href="${resumeUrl}" target="_blank" class="w-full inline-block text-center bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium text-sm">View Submitted Resume</a>`
+                : `<button class="w-full bg-slate-200 text-slate-600 py-2 rounded-lg font-medium text-sm cursor-not-allowed" disabled>No Resume</button>`}
+            </div>
+          </div>
+        `;
+      });
+      const rows = [];
+      for (let i = 0; i < cards.length; i += 4) {
+        rows.push(`<div class="flex gap-4 items-start">${cards.slice(i, i + 4).join("")}</div>`);
+      }
+      container.innerHTML = rows.join("");
+      renderLatestJobs();
+    } catch {
+      appliedJobIds = new Set();
+      container.innerHTML = `<div class="text-red-500 text-sm">Failed to load applied jobs.</div>`;
+      renderLatestJobs();
+    }
+  }
+
+  function renderJob(job) {
+    return `
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm
+                flex flex-col gap-3
+                hover:shadow-md transition min-h-[220px] w-full sm:w-[320px] flex-none">
+  
+      <!-- Job Title + Status -->
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 class="text-lg font-semibold text-slate-900">
+            ${job.title}
+          </h3>
+          <p class="text-sm text-slate-600">
+            ${job.companyName || "Company"}
+          </p>
+        </div>
+  
+        <span class="px-3 py-1 text-xs rounded-full
+                     bg-blue-100 text-blue-700 font-medium">
+          ${job.status || "Actively hiring"}
+        </span>
+      </div>
+  
+      <!-- Job Meta -->
+      <div class="flex flex-wrap gap-4 text-sm text-slate-600">
+        <div class="inline-flex items-center gap-2">
+          <svg class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-6.5-5.3-6.5-10A6.5 6.5 0 1 1 18.5 11c0 4.7-6.5 10-6.5 10z"/>
+            <circle cx="12" cy="11" r="2.5"/>
+          </svg>
+          <span>${job.location}</span>
+        </div>
+        <div class="inline-flex items-center gap-2">
+          <svg class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18v12H3z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/>
+          </svg>
+          <span>${job.type}</span>
+        </div>
+        <div class="inline-flex items-center gap-2">
+          <svg class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-4-8h8"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 1 0 16 0A8 8 0 1 0 4 12z"/>
+          </svg>
+          <span>${job.salary || "Not disclosed"}</span>
+        </div>
+      </div>
+  
+      <!-- Description -->
+      <p class="text-sm text-slate-700 leading-relaxed line-clamp-3">
+        ${job.description}
+      </p>
+  
+      <!-- Apply Button -->
+      <div class="pt-2">
+        <button
+          data-action="apply-job"
+          data-job-id="${job._id}"
+          class="w-full bg-blue-600 text-white py-2 rounded-lg
+                 hover:bg-blue-700 transition font-medium text-sm">
+          Apply
+        </button>
+      </div>
+  
+    </div>
+    `;
+  }
+
+  // ================= INIT =================
+  loadJobs();
+</script>
+
+
+</body>
+</html>
+

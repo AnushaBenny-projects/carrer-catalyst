@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<!-- Purpose: Renders the coding page for the Career Catalyst frontend. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Career Catalyst | Coding DSA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .sheet-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+    }
+    .difficulty-easy { background: #dcfce7; color: #166534; }
+    .difficulty-medium { background: #fef3c7; color: #92400e; }
+    .difficulty-hard { background: #fee2e2; color: #991b1b; }
+    .table-head { background: #f8fafc; }
+    .row-bg:hover { background: #f8fafc; }
+  </style>
+</head>
+<body class="bg-white overflow-x-hidden">
+  <nav class="bg-white border-b shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-10">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='student-dashboard.html'">
+          <img src="./assets/CareerCatalyst.png" class="w-36 h-auto" alt="Career Catalyst" />
+        </div>
+        <div class="hidden md:flex gap-8 text-slate-700 font-medium">
+          <a href="student-dashboard.html" class="hover:text-blue-600 transition">Home</a>
+          <a href="coding.html" class="text-blue-600">Practice</a>
+          <a href="#" class="hover:text-blue-600 transition">Jobs</a>
+          <a href="#" class="hover:text-blue-600 transition">Search Jobs</a>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <img id="navProfilePic" class="w-10 h-10 rounded-full object-cover border border-slate-200" alt="Profile">
+        <span id="navUser" class="text-slate-700 font-semibold text-sm md:text-base"></span>
+        <button id="logoutBtn" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition font-medium">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 md:px-10 py-8">
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-slate-900">Coding / DSA Sheet</h1>
+      <p class="text-slate-600 mt-1">Practice problems with topic-wise roadmap and progress tracking.</p>
+    </div>
+
+    <section class="sheet-card rounded-2xl p-4 md:p-5 mb-6">
+      <div class="grid md:grid-cols-5 gap-3 items-end">
+        <div class="md:col-span-3">
+          <p class="text-xs text-slate-500">Logged in as</p>
+          <p id="studentIdentity" class="text-sm text-slate-800 font-semibold">Loading student...</p>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">Difficulty</label>
+          <select id="difficultyFilter" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            <option value="all">All</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+        </div>
+        <div>
+          <button id="resetBtn" class="w-full px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm text-slate-700">Reset</button>
+        </div>
+      </div>
+      <div class="mt-4">
+        <p id="globalSummary" class="text-sm text-slate-700">Solved 0 / 0</p>
+      </div>
+      <p id="statusText" class="text-xs text-slate-500 mt-1">Loading your coding roadmap...</p>
+    </section>
+
+    <section id="sheetContainer" class="space-y-4"></section>
+  </main>
+
+  <script>
+    const API_BASE = "http://localhost:5000/api/coding";
+    const state = {
+      learnerId: "",
+      sections: [],
+      progress: {},
+      notes: {},
+      revision: {},
+      difficulty: "all"
+    };
+
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+    const username = localStorage.getItem("username") || "User";
+    const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
+    const BACKEND_BASE = "http://localhost:5000";
+
+    if (!token || role !== "candidate") {
+      window.location.href = "login.html";
+    }
+
+    document.getElementById("navUser").textContent = username;
+    function fallbackAvatar(name) {
+      const initials = (name || "U")
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((p) => p[0].toUpperCase())
+        .join("");
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><rect width='100%' height='100%' fill='#dbeafe'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='30' fill='#1e3a8a'>${initials}</text></svg>`;
+      return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+    }
+    const profilePic = localStorage.getItem("profilePic") || "";
+    const profilePicUrl = localStorage.getItem("profilePicUrl") || "";
+    const computedProfileSrc = profilePicUrl || (profilePic ? `${BACKEND_BASE}/uploads/${profilePic}` : "");
+    const navProfilePic = document.getElementById("navProfilePic");
+    navProfilePic.src = computedProfileSrc || fallbackAvatar(username);
+    navProfilePic.onerror = () => { navProfilePic.src = fallbackAvatar(username); };
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "role.html";
+    });
+
+    const studentIdentityEl = document.getElementById("studentIdentity");
+    const difficultyFilterEl = document.getElementById("difficultyFilter");
+    const statusTextEl = document.getElementById("statusText");
+    const globalSummaryEl = document.getElementById("globalSummary");
+    const containerEl = document.getElementById("sheetContainer");
+
+    function resolveLearnerId() {
+      const params = new URLSearchParams(window.location.search);
+      return (
+        params.get("learnerId") ||
+        localStorage.getItem("userEmail") ||
+        localStorage.getItem("username") ||
+        ""
+      ).trim();
+    }
+
+    function loadLocalMeta() {
+      const notesRaw = localStorage.getItem("cc_dsa_notes");
+      const revisionRaw = localStorage.getItem("cc_dsa_revision");
+      state.notes = notesRaw ? JSON.parse(notesRaw) : {};
+      state.revision = revisionRaw ? JSON.parse(revisionRaw) : {};
+    }
+
+    function saveLocalMeta() {
+      localStorage.setItem("cc_dsa_notes", JSON.stringify(state.notes));
+      localStorage.setItem("cc_dsa_revision", JSON.stringify(state.revision));
+    }
+
+    function getProblemStatus(problemId) {
+      return state.progress[problemId] || "todo";
+    }
+
+    function getDifficultyClass(level) {
+      if (level === "Easy") return "difficulty-easy";
+      if (level === "Medium") return "difficulty-medium";
+      return "difficulty-hard";
+    }
+
+    function iconDoc() {
+      return `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500 hover:text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h8"/><path d="M8 9h2"/></svg>`;
+    }
+
+    function iconPlus() {
+      return `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-500 hover:text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>`;
+    }
+
+    function iconStar(active) {
+      if (active) {
+        return `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.86L12 17.77 5.82 21l1.18-6.86-5-4.87 6.91-1.01z"/></svg>`;
+      }
+      return `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400 hover:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.86L12 17.77 5.82 21l1.18-6.86-5-4.87 6.91-1.01z"/></svg>`;
+    }
+
+    async function fetchRoadmap() {
+      const res = await fetch(`${API_BASE}/roadmap`);
+      if (!res.ok) throw new Error("Failed to fetch roadmap");
+      const data = await res.json();
+      state.sections = data.sections || [];
+    }
+
+    async function fetchProgress() {
+      const res = await fetch(`${API_BASE}/progress/me`, {
+        headers: authHeader
+      });
+      if (!res.ok) throw new Error("Failed to fetch progress");
+      const data = await res.json();
+      state.progress = data.progress || {};
+      state.learnerId = data.learnerId || state.learnerId;
+      updateGlobalSummary();
+    }
+
+    async function saveStatus(problemId, status) {
+      if (!token) {
+        alert("Student session not found. Please login again.");
+        return;
+      }
+      const res = await fetch(`${API_BASE}/progress/me`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeader
+        },
+        body: JSON.stringify({ problemId, status })
+      });
+      if (!res.ok) throw new Error("Failed to save status");
+      const data = await res.json();
+      state.progress = data.progress || state.progress;
+      updateGlobalSummary();
+    }
+
+    function updateGlobalSummary() {
+      let total = 0;
+      let solved = 0;
+      for (const section of state.sections) {
+        for (const p of section.problems) {
+          total += 1;
+          if (getProblemStatus(p.id) === "solved") solved += 1;
+        }
+      }
+      globalSummaryEl.textContent = `Solved ${solved} / ${total}`;
+    }
+
+    function toggleSection(sectionId) {
+      const body = document.getElementById(`body-${sectionId}`);
+      const arrow = document.getElementById(`arrow-${sectionId}`);
+      const hidden = body.classList.contains("hidden");
+      body.classList.toggle("hidden");
+      arrow.textContent = hidden ? "v" : ">";
+    }
+
+    function filteredProblems(section) {
+      if (state.difficulty === "all") return section.problems;
+      return section.problems.filter((p) => p.difficulty === state.difficulty);
+    }
+
+    function sectionSummary(section) {
+      const problems = filteredProblems(section);
+      const total = problems.length;
+      const solved = problems.filter((p) => getProblemStatus(p.id) === "solved").length;
+      return { solved, total };
+    }
+
+    function render() {
+      containerEl.innerHTML = "";
+
+      state.sections.forEach((section, idx) => {
+        const rows = filteredProblems(section);
+        if (!rows.length) return;
+
+        const s = sectionSummary(section);
+        const progressPercent = s.total ? Math.round((s.solved / s.total) * 100) : 0;
+        const wrapper = document.createElement("div");
+        wrapper.className = "sheet-card rounded-2xl overflow-hidden";
+        wrapper.innerHTML = `
+          <div class="px-4 md:px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-3">
+            <button onclick="toggleSection('${section.id}')" class="flex items-center gap-2 text-left">
+              <span id="arrow-${section.id}" class="text-lg text-slate-500">${idx === 0 ? "v" : ">"}</span>
+              <div>
+                <p class="font-semibold text-base md:text-lg text-slate-900">${section.title}</p>
+                <p class="text-xs text-slate-500">${section.topics.join(" | ")}</p>
+              </div>
+            </button>
+            <div class="w-32 md:w-52">
+              <div class="flex items-center justify-end gap-2 text-xs text-slate-500 mb-1">
+                <span>${s.solved} / ${s.total}</span>
+              </div>
+              <div class="w-full bg-slate-200 rounded-full h-1.5">
+                <div class="h-1.5 rounded-full bg-blue-600" style="width:${progressPercent}%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="body-${section.id}" class="${idx === 0 ? "" : "hidden"}">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm">
+                <thead class="table-head border-b border-slate-200">
+                  <tr class="text-slate-700">
+                    <th class="text-left font-semibold px-4 py-3">Status</th>
+                    <th class="text-left font-semibold px-4 py-3">Problem</th>
+                    <th class="text-left font-semibold px-4 py-3">Solve</th>
+                    <th class="text-left font-semibold px-4 py-3">Resource</th>
+                    <th class="text-left font-semibold px-4 py-3">Practice</th>
+                    <th class="text-left font-semibold px-4 py-3">Note</th>
+                    <th class="text-left font-semibold px-4 py-3">Revision</th>
+                    <th class="text-left font-semibold px-4 py-3">Difficulty</th>
+                  </tr>
+                </thead>
+                <tbody id="rows-${section.id}"></tbody>
+              </table>
+            </div>
+          </div>
+        `;
+
+        const tbody = wrapper.querySelector(`#rows-${section.id}`);
+        rows.forEach((problem) => {
+          const solved = getProblemStatus(problem.id) === "solved";
+          const revised = Boolean(state.revision[problem.id]);
+          const tr = document.createElement("tr");
+          tr.className = "row-bg border-b border-slate-200";
+          tr.innerHTML = `
+            <td class="px-4 py-4">
+              <input type="checkbox" data-type="status" data-problem="${problem.id}" ${solved ? "checked" : ""} class="w-5 h-5 accent-blue-600 bg-white border-slate-300 rounded">
+            </td>
+            <td class="px-4 py-4 font-medium text-slate-900">${problem.title}</td>
+            <td class="px-4 py-4">
+              <a href="${problem.url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-700 font-semibold">Solve</a>
+            </td>
+            <td class="px-4 py-4">
+              <a href="${problem.url}" target="_blank" rel="noopener noreferrer" title="Read Problem">${iconDoc()}</a>
+            </td>
+            <td class="px-4 py-4">
+              <a href="code-practice.html?problemId=${encodeURIComponent(problem.id)}" class="text-blue-600 hover:text-blue-700 font-semibold">Code</a>
+            </td>
+            <td class="px-4 py-4">
+              <button data-type="note" data-problem="${problem.id}">${iconPlus()}</button>
+            </td>
+            <td class="px-4 py-4">
+              <button data-type="revision" data-problem="${problem.id}">${iconStar(revised)}</button>
+            </td>
+            <td class="px-4 py-4">
+              <span class="inline-block px-3 py-1 rounded-lg text-xs font-semibold ${getDifficultyClass(problem.difficulty)}">${problem.difficulty}</span>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        containerEl.appendChild(wrapper);
+      });
+
+      bindEvents();
+    }
+
+    function bindEvents() {
+      document.querySelectorAll("input[data-type='status']").forEach((input) => {
+        input.addEventListener("change", async (e) => {
+          const problemId = e.target.dataset.problem;
+          const status = e.target.checked ? "solved" : "todo";
+          try {
+            await saveStatus(problemId, status);
+            statusTextEl.textContent = "Progress updated.";
+            render();
+          } catch (err) {
+            statusTextEl.textContent = "Failed to update progress.";
+            console.error(err);
+          }
+        });
+      });
+
+      document.querySelectorAll("button[data-type='note']").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const problemId = e.currentTarget.dataset.problem;
+          const current = state.notes[problemId] || "";
+          const next = prompt("Add / Edit note", current);
+          if (next === null) return;
+          state.notes[problemId] = next.trim();
+          saveLocalMeta();
+          statusTextEl.textContent = "Note saved.";
+        });
+      });
+
+      document.querySelectorAll("button[data-type='revision']").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const problemId = e.currentTarget.dataset.problem;
+          state.revision[problemId] = !state.revision[problemId];
+          saveLocalMeta();
+          render();
+        });
+      });
+    }
+
+    async function loadAll() {
+      try {
+        await fetchRoadmap();
+        if (state.learnerId) {
+          await fetchProgress();
+          studentIdentityEl.textContent = state.learnerId;
+          statusTextEl.textContent = `Progress loaded for ${state.learnerId}`;
+        } else {
+          studentIdentityEl.textContent = username;
+          statusTextEl.textContent = "Student not detected. Open this page from Student Dashboard.";
+        }
+        updateGlobalSummary();
+        render();
+      } catch (err) {
+        containerEl.innerHTML = `<div class="sheet-card rounded-xl p-6 text-red-600">Unable to load roadmap. Start backend and refresh.</div>`;
+        console.error(err);
+      }
+    }
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      difficultyFilterEl.value = "all";
+      state.difficulty = "all";
+      render();
+    });
+
+    difficultyFilterEl.addEventListener("change", (e) => {
+      state.difficulty = e.target.value;
+      render();
+    });
+
+    window.toggleSection = toggleSection;
+
+    loadLocalMeta();
+    state.learnerId = resolveLearnerId();
+    loadAll();
+  </script>
+</body>
+</html>

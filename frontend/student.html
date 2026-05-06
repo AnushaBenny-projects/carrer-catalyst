@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!-- Purpose: Renders the student page for the Career Catalyst frontend. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Signup | Career Catalyst</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 flex justify-center items-center min-h-screen px-4 overflow-x-hidden">
+
+  <div id="signupContainer" class="bg-white w-full max-w-lg rounded-2xl shadow-xl p-8 space-y-6 border border-gray-100">
+
+    <div class="flex justify-center mb-4">
+      <img src="./assets/logo.jpg" alt="Career Catalyst Logo" class="w-48 h-auto">
+    </div>
+
+    <h2 class="text-3xl font-bold text-center text-gray-800">Student Registration</h2>
+    <p class="text-center text-gray-500 mb-6">
+      Create your profile and explore opportunities that match your skills and goals
+    </p>
+
+    <form id="signupForm" class="space-y-4" enctype="multipart/form-data">
+      <input type="text" name="name" placeholder="Full Name"
+             class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none" required>
+
+      <input type="email" name="email" placeholder="Email Address"
+             class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none" required>
+
+      <input type="password" name="password" placeholder="Password"
+             class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none" required>
+
+      <input type="text" name="skills" placeholder="Skills (e.g., Python, React, SQL)"
+             class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none">
+
+      <label class="flex justify-between items-center border border-gray-300 rounded-lg p-3 cursor-pointer hover:bg-gray-50">
+        <span>Upload Profile Picture</span>
+        <input type="file" name="profilePic" accept="image/*" class="hidden" id="profilePic">
+      </label>
+      <p id="profileFileName" class="text-sm text-gray-500 ml-1"></p>
+
+      <button type="submit"
+        class="w-full bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-blue-600 hover:to-indigo-500
+               text-white font-semibold py-3 rounded-lg shadow-md transition">
+        Create Account
+      </button>
+    </form>
+
+    <p id="responseMsg" class="text-center text-sm mt-4 font-medium"></p>
+
+    <p class="text-center text-sm text-gray-500">
+      Already have an account?
+      <a href="login.html" class="text-indigo-600 font-medium hover:underline">Login</a>
+    </p>
+  </div>
+
+  <script>
+    const form = document.getElementById("signupForm");
+    const fileInput = document.getElementById("profilePic");
+    const profileFileNameDisplay = document.getElementById("profileFileName");
+    const responseMsg = document.getElementById("responseMsg");
+
+    fileInput.addEventListener("change", () => {
+      profileFileNameDisplay.textContent = fileInput.files[0]
+        ? `Selected: ${fileInput.files[0].name}`
+        : "";
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const submitBtn = form.querySelector("button[type='submit']");
+      submitBtn.disabled = true;
+      submitBtn.classList.add("opacity-70", "cursor-not-allowed");
+
+      const formData = new FormData(form);
+      formData.append("role", "student");
+
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/signup", {
+          method: "POST",
+          body: formData,
+        });
+
+        const raw = await res.text();
+        let data = {};
+        try {
+          data = raw ? JSON.parse(raw) : {};
+        } catch {
+          data = { message: raw || "Unexpected server response" };
+        }
+
+        if (res.ok) {
+          responseMsg.textContent = data.message || "Signup successful! Redirecting...";
+          responseMsg.className = "text-center text-green-600 font-medium";
+          setTimeout(() => {
+            window.location.href = "login.html";
+          }, 900);
+          return;
+        }
+
+        responseMsg.textContent = data.message || "Something went wrong!";
+        responseMsg.className = "text-center text-red-600 font-medium";
+      } catch (_error) {
+        responseMsg.textContent = "Error connecting to server!";
+        responseMsg.className = "text-center text-red-600 font-medium";
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove("opacity-70", "cursor-not-allowed");
+      }
+    });
+  </script>
+
+</body>
+</html>

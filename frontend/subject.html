@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<!-- Purpose: Renders the subject page for the Career Catalyst frontend. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subject | Career Catalyst</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-800 overflow-x-hidden">
+
+<section class="max-w-5xl mx-auto px-6 py-10">
+
+  <!-- HEADER -->
+  <div class="mb-10">
+    <h1 id="subjectTitle" class="text-4xl font-bold text-blue-700 capitalize">
+      Loading...
+    </h1>
+    <p class="text-slate-600 mt-2 text-sm">
+      Structured theory, curated GeeksforGeeks topics and placement MCQs
+    </p>
+  </div>
+
+  <!-- THEORY -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-10">
+    <h2 class="text-xl font-semibold text-blue-700 mb-4">Theory</h2>
+    <div id="theoryContent"
+         class="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+      Loading theory...
+    </div>
+  </div>
+
+  <!-- GFG TOPICS -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-10">
+    <h2 class="text-xl font-semibold text-blue-700 mb-4">
+      Important GeeksforGeeks Topics
+    </h2>
+    <ul id="gfgTopics" class="space-y-3 text-sm"></ul>
+  </div>
+
+  <!-- MCQs -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+    <h2 class="text-xl font-semibold text-blue-700 mb-6">
+      Practice MCQs
+    </h2>
+    <div id="mcqContainer" class="space-y-8"></div>
+  </div>
+
+</section>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const subject = params.get("subject") || "os";
+
+document.getElementById("subjectTitle").innerText = subject.toUpperCase();
+
+fetch(`http://localhost:5000/api/subjects/${subject}`)
+  .then(res => res.json())
+  .then(data => {
+    renderTheory(data.theory);
+    renderGfgTopics(data.gfgTopics || []);
+    renderMCQs(data.mcqs.slice(0, 25));
+  })
+  .catch(() => {
+    document.getElementById("theoryContent").innerText =
+      "Failed to load content.";
+  });
+
+/* ================= THEORY ================= */
+function renderTheory(text) {
+  document.getElementById("theoryContent").innerText = text;
+}
+
+/* ================= GFG TOPICS ================= */
+function renderGfgTopics(topics) {
+  const list = document.getElementById("gfgTopics");
+  list.innerHTML = "";
+
+  if (!topics.length) {
+    list.innerHTML = `<li class="text-slate-500">No topics available</li>`;
+    return;
+  }
+
+  topics.forEach(t => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <a href="${t.gfgLink}" target="_blank"
+         class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+        ${t.title}
+      </a>
+    `;
+    list.appendChild(li);
+  });
+}
+
+/* ================= MCQs ================= */
+function renderMCQs(mcqs) {
+  const container = document.getElementById("mcqContainer");
+  container.innerHTML = "";
+
+  mcqs.forEach((q, index) => {
+    const card = document.createElement("div");
+    card.className =
+      "border border-slate-200 rounded-xl p-6 hover:shadow transition";
+
+    const optionsHtml = q.options.map(opt => `
+      <button
+        class="option-btn w-full text-left border rounded-lg px-4 py-2 mt-2
+               text-sm hover:bg-blue-50 transition"
+        data-correct="${q.correctAnswer}"
+        data-letter="${opt.charAt(0)}">
+        ${opt}
+      </button>
+    `).join("");
+
+    card.innerHTML = `
+      <div class="font-medium text-slate-800 mb-3">
+        Q${index + 1}. ${q.question}
+      </div>
+
+      <div class="options space-y-1">${optionsHtml}</div>
+
+      <div class="explanation hidden mt-4 text-sm bg-blue-50 border-l-4
+                  border-blue-500 p-4 rounded">
+        <span class="font-semibold text-blue-700">Explanation:</span>
+        <div class="mt-1 text-slate-700">${q.explanation}</div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+
+  attachOptionHandlers();
+}
+
+/* ================= ANSWER CHECK ================= */
+function attachOptionHandlers() {
+  document.querySelectorAll(".option-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const optionsDiv = btn.closest(".options");
+      if (optionsDiv.classList.contains("answered")) return;
+
+      optionsDiv.classList.add("answered");
+      const correctLetter = btn.dataset.correct;
+
+      optionsDiv.querySelectorAll(".option-btn").forEach(b => {
+        const optionLetter = b.dataset.letter;
+
+        if (optionLetter === correctLetter) {
+          b.classList.add(
+            "bg-green-50", "border-green-500", "text-green-700"
+          );
+        } else if (b === btn) {
+          b.classList.add(
+            "bg-red-50", "border-red-500", "text-red-700"
+          );
+        }
+        b.disabled = true;
+      });
+
+      btn.closest(".border")
+        .querySelector(".explanation")
+        .classList.remove("hidden");
+    });
+  });
+}
+</script>
+
+</body>
+</html>
